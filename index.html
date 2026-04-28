@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro de Ponto — CRV/LAS</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #0F1B2D 0%, #1A3A6B 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 15px;
+    }
+    
+    .container {
+      background: #FFFFFF;
+      border-radius: 20px;
+      padding: 25px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    
+    .header { text-align: center; margin-bottom: 20px; }
+    .header h1 { color: #0F1B2D; font-size: 20px; margin-bottom: 4px; }
+    .header p { color: #666; font-size: 12px; }
+    
+    .clock {
+      text-align: center;
+      font-size: 44px;
+      font-weight: bold;
+      color: #1A3A6B;
+      margin: 10px 0;
+      font-family: 'Courier New', monospace;
+    }
+    
+    .date-display {
+      text-align: center;
+      color: #666;
+      font-size: 13px;
+      margin-bottom: 18px;
+    }
+    
+    label {
+      display: block;
+      color: #0F1B2D;
+      font-weight: 600;
+      font-size: 13px;
+      margin-bottom: 5px;
+      margin-top: 12px;
+    }
+    
+    select {
+      width: 100%;
+      padding: 11px;
+      border: 2px solid #E0E0E0;
+      border-radius: 10px;
+      font-size: 15px;
+      background: #F8F9FA;
+      color: #333;
+    }
+    
+    select:focus { border-color: #2D7DD2; outline: none; }
+    
+    .camera-area { margin-top: 15px; text-align: center; }
+    
+    .camera-preview {
+      width: 100%;
+      max-width: 280px;
+      height: 210px;
+      background: #1A1A2E;
+      border-radius: 15px;
+      overflow: hidden;
+      margin: 0 auto 8px;
+    }
+    
+    .camera-preview video,
+    .camera-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .btn-camera {
+      background: #2D7DD2;
+      color: white;
+      border: none;
+      padding: 9px 22px;
+      border-radius: 25px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 4px;
+    }
+    
+    .btn-registrar {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(135deg, #27AE60, #2ECC71);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 17px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 20px;
+      letter-spacing: 1px;
+    }
+    
+    .btn-registrar:disabled { background: #CCC; cursor: not-allowed; }
+    
+    .status-bar {
+      margin-top: 12px;
+      padding: 11px;
+      border-radius: 10px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      display: none;
+    }
+    
+    .status-success { background: #D4EDDA; color: #155724; border: 1px solid #C3E6CB; }
+    .status-error { background: #F8D7DA; color: #721C24; border: 1px solid #F5C6CB; }
+    .status-loading { background: #FFF3CD; color: #856404; border: 1px solid #FFEAA7; }
+    
+    .gps-status { text-align: center; font-size: 11px; color: #666; margin-top: 8px; }
+    .gps-ok { color: #27AE60; }
+    .gps-error { color: #E74C3C; }
+    .foto-status { font-size: 11px; color: #27AE60; margin-top: 4px; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>REGISTRO DE PONTO</h1>
+    <p>CRV/LAS Logística</p>
+  </div>
+  
+  <div class="clock" id="relogio">--:--:--</div>
+  <div class="date-display" id="dataDisplay">Carregando...</div>
+  
+  <label>Funcionário</label>
+  <select id="nome">
+    <option value="">Selecione seu nome...</option>
+    <option value="LUCAS">LUCAS</option>
+    <option value="TASSIO">TASSIO</option>
+    <option value="AMARAL">AMARAL</option>
+    <option value="ALEX">ALEX</option>
+  </select>
+  
+  <label>Tipo de Registro</label>
+  <select id="tipo">
+    <option value="">Selecione...</option>
+    <option value="Entrada">Entrada</option>
+    <option value="Saída Almoço">Saída Almoço</option>
+    <option value="Retorno Almoço">Retorno Almoço</option>
+    <option value="Saída Final">Saída Final</option>
+  </select>
+  
+  <div class="camera-area">
+    <label>Selfie no Local</label>
+    <div class="camera-preview" id="cameraBox">
+      <video id="video" autoplay playsinline muted></video>
+      <canvas id="canvas" style="display:none;"></canvas>
+      <img id="preview" style="display:none;">
+    </div>
+    <button class="btn-camera" id="btnCapturar" onclick="tirarFoto()">📸 Tirar Foto</button>
+    <button class="btn-camera" id="btnNova" onclick="novaFoto()" style="display:none;">🔄 Nova Foto</button>
+    <div class="foto-status" id="fotoStatus"></div>
+  </div>
+  
+  <div class="gps-status" id="gpsStatus">📍 Obtendo localização...</div>
+  
+  <button class="btn-registrar" id="btnRegistrar" onclick="enviarPonto()" disabled>
+    REGISTRAR PONTO
+  </button>
+  
+  <div class="status-bar" id="statusBar"></div>
+</div>
+
+<script>
+  // ===== CONFIGURAÇÃO =====
+  var API_URL = 'COLE_SEU_LINK_AQUI';
+  // ========================
+  
+  var latitude = null;
+  var longitude = null;
+  var selfieBase64 = null;
+  var stream = null;
+  
+  // RELÓGIO
+  function atualizarRelogio() {
+    var agora = new Date();
+    var h = String(agora.getHours()).padStart(2, '0');
+    var m = String(agora.getMinutes()).padStart(2, '0');
+    var s = String(agora.getSeconds()).padStart(2, '0');
+    document.getElementById('relogio').textContent = h + ':' + m + ':' + s;
+    
+    var dias = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
+    var meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    document.getElementById('dataDisplay').textContent = 
+      dias[agora.getDay()] + ', ' + agora.getDate() + ' de ' + meses[agora.getMonth()] + ' de ' + agora.getFullYear();
+  }
+  setInterval(atualizarRelogio, 1000);
+  atualizarRelogio();
+  
+  // CÂMERA
+  function iniciarCamera() {
+    navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }
+    })
+    .then(function(s) {
+      stream = s;
+      document.getElementById('video').srcObject = s;
+      document.getElementById('fotoStatus').textContent = '📷 Câmera pronta';
+      document.getElementById('fotoStatus').style.color = '#27AE60';
+    })
+    .catch(function(err) {
+      document.getElementById('fotoStatus').textContent = '❌ Câmera: ' + err.message;
+      document.getElementById('fotoStatus').style.color = '#E74C3C';
+    });
+  }
+  iniciarCamera();
+  
+  function tirarFoto() {
+    var video = document.getElementById('video');
+    var canvas = document.getElementById('canvas');
+    var preview = document.getElementById('preview');
+    
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    
+    var dataUrl = canvas.toDataURL('image/png');
+    selfieBase64 = dataUrl.split(',')[1];
+    preview.src = dataUrl;
+    
+    video.style.display = 'none';
+    preview.style.display = 'block';
+    document.getElementById('btnCapturar').style.display = 'none';
+    document.getElementById('btnNova').style.display = 'inline-block';
+    document.getElementById('fotoStatus').textContent = '✅ Foto capturada!';
+    document.getElementById('fotoStatus').style.color = '#27AE60';
+    
+    verificarFormulario();
+  }
+  
+  function novaFoto() {
+    document.getElementById('video').style.display = 'block';
+    document.getElementById('preview').style.display = 'none';
+    document.getElementById('btnCapturar').style.display = 'inline-block';
+    document.getElementById('btnNova').style.display = 'none';
+    document.getElementById('fotoStatus').textContent = '📷 Câmera pronta';
+    selfieBase64 = null;
+    verificarFormulario();
+  }
+  
+  // GPS
+  function obterGPS() {
+    if (!navigator.geolocation) {
+      document.getElementById('gpsStatus').textContent = '❌ GPS não suportado';
+      document.getElementById('gpsStatus').className = 'gps-status gps-error';
+      return;
+    }
+    
+    navigator.geolocation.getCurrentPosition(
+      function(pos) {
+        latitude = pos.coords.latitude;
+        longitude = pos.coords.longitude;
+        document.getElementById('gpsStatus').textContent = '📍 Localização obtida ✅';
+        document.getElementById('gpsStatus').className = 'gps-status gps-ok';
+        verificarFormulario();
+      },
+      function(err) {
+        document.getElementById('gpsStatus').textContent = '❌ GPS: ' + err.message;
+        document.getElementById('gpsStatus').className = 'gps-status gps-error';
+        // Tentar novamente em 3 segundos
+        setTimeout(obterGPS, 3000);
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+    );
+  }
+  obterGPS();
+  
+  // VALIDAÇÃO
+  function verificarFormulario() {
+    var nome = document.getElementById('nome').value;
+    var tipo = document.getElementById('tipo').value;
+    document.getElementById('btnRegistrar').disabled = !(nome && tipo && selfieBase64 && latitude);
+  }
+  
+  document.getElementById('nome').addEventListener('change', verificarFormulario);
+  document.getElementById('tipo').addEventListener('change', verificarFormulario);
+  
+  // ENVIAR
+  function enviarPonto() {
+    var btn = document.getElementById('btnRegistrar');
+    var status = document.getElementById('statusBar');
+    
+    btn.disabled = true;
+    btn.textContent = 'REGISTRANDO...';
+    status.style.display = 'block';
+    status.className = 'status-bar status-loading';
+    status.textContent = '⏳ Enviando dados ao servidor...';
+    
+    var dados = {
+      nome: document.getElementById('nome').value,
+      tipo: document.getElementById('tipo').value,
+      selfie: selfieBase64,
+      latitude: latitude,
+      longitude: longitude,
+      dispositivo: navigator.userAgent
+    };
+    
+    fetch(API_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(dados)
+    })
+    .then(function() {
+      status.className = 'status-bar status-success';
+      status.textContent = '✅ Ponto registrado com sucesso!';
+      
+      setTimeout(function() {
+        document.getElementById('nome').value = '';
+        document.getElementById('tipo').value = '';
+        novaFoto();
+        obterGPS();
+        btn.textContent = 'REGISTRAR PONTO';
+        btn.disabled = true;
+        status.style.display = 'none';
+      }, 4000);
+    })
+    .catch(function(err) {
+      status.className = 'status-bar status-error';
+      status.textContent = '❌ Erro: ' + err.message;
+      btn.disabled = false;
+      btn.textContent = 'REGISTRAR PONTO';
+    });
+  }
+</script>
+
+</body>
+</html>
