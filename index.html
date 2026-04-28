@@ -2,350 +2,556 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Registro de Ponto — CRV/LAS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Ponto Digital — Grupo Carlos Vaz</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' style='stop-color:%233B82F6'/><stop offset='100%25' style='stop-color:%2306B6D4'/></linearGradient></defs><rect width='100' height='100' rx='20' fill='url(%23g)'/><text x='50' y='38' text-anchor='middle' fill='white' font-family='Arial' font-weight='900' font-size='28'>GCV</text><text x='50' y='72' text-anchor='middle' fill='rgba(255,255,255,0.7)' font-family='Arial' font-weight='600' font-size='16'>PONTO</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    
+    :root {
+      --navy-deep: #080E1A;
+      --navy-dark: #0C1426;
+      --navy-mid: #111D35;
+      --navy-light: #1A2D50;
+      --navy-glow: #2A4A7F;
+      --accent-blue: #3B82F6;
+      --accent-cyan: #06B6D4;
+      --accent-green: #10B981;
+      --accent-amber: #F59E0B;
+      --accent-red: #EF4444;
+      --accent-purple: #8B5CF6;
+      --glass-bg: rgba(17, 29, 53, 0.6);
+      --glass-border: rgba(59, 130, 246, 0.15);
+      --text-primary: #F1F5F9;
+      --text-secondary: #94A3B8;
+      --text-muted: #64748B;
+      --shadow-glow: 0 0 40px rgba(59, 130, 246, 0.08);
+      --radius-xl: 24px;
+      --radius-lg: 16px;
+      --radius-md: 12px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body {
-      font-family: 'Segoe UI', Arial, sans-serif;
-      background: linear-gradient(135deg, #0F1B2D 0%, #1A3A6B 100%);
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 15px;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--navy-deep);
+      min-height: 100vh; min-height: 100dvh;
+      overflow-x: hidden; color: var(--text-primary);
     }
-    
-    .container {
-      background: #FFFFFF;
-      border-radius: 20px;
-      padding: 25px;
-      width: 100%;
-      max-width: 400px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-    }
-    
-    .header { text-align: center; margin-bottom: 20px; }
-    .header h1 { color: #0F1B2D; font-size: 20px; margin-bottom: 4px; }
-    .header p { color: #666; font-size: 12px; }
-    
-    .clock {
-      text-align: center;
-      font-size: 44px;
-      font-weight: bold;
-      color: #1A3A6B;
-      margin: 10px 0;
-      font-family: 'Courier New', monospace;
-    }
-    
-    .date-display {
-      text-align: center;
-      color: #666;
-      font-size: 13px;
-      margin-bottom: 18px;
-    }
-    
-    label {
-      display: block;
-      color: #0F1B2D;
-      font-weight: 600;
-      font-size: 13px;
-      margin-bottom: 5px;
-      margin-top: 12px;
-    }
-    
-    select {
-      width: 100%;
-      padding: 11px;
-      border: 2px solid #E0E0E0;
-      border-radius: 10px;
-      font-size: 15px;
-      background: #F8F9FA;
-      color: #333;
-    }
-    
-    select:focus { border-color: #2D7DD2; outline: none; }
-    
-    .camera-area { margin-top: 15px; text-align: center; }
-    
-    .camera-preview {
-      width: 100%;
-      max-width: 280px;
-      height: 210px;
-      background: #1A1A2E;
-      border-radius: 15px;
-      overflow: hidden;
-      margin: 0 auto 8px;
-    }
-    
-    .camera-preview video,
-    .camera-preview img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    
-    .btn-camera {
-      background: #2D7DD2;
-      color: white;
-      border: none;
-      padding: 9px 22px;
-      border-radius: 25px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      margin: 4px;
-    }
-    
-    .btn-registrar {
-      width: 100%;
-      padding: 15px;
-      background: linear-gradient(135deg, #27AE60, #2ECC71);
-      color: white;
-      border: none;
-      border-radius: 12px;
-      font-size: 17px;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 20px;
-      letter-spacing: 1px;
-    }
-    
-    .btn-registrar:disabled { background: #CCC; cursor: not-allowed; }
-    
-    .status-bar {
-      margin-top: 12px;
-      padding: 11px;
-      border-radius: 10px;
-      text-align: center;
-      font-size: 13px;
-      font-weight: 600;
-      display: none;
-    }
-    
-    .status-success { background: #D4EDDA; color: #155724; border: 1px solid #C3E6CB; }
-    .status-error { background: #F8D7DA; color: #721C24; border: 1px solid #F5C6CB; }
-    .status-loading { background: #FFF3CD; color: #856404; border: 1px solid #FFEAA7; }
-    
-    .gps-status { text-align: center; font-size: 11px; color: #666; margin-top: 8px; }
-    .gps-ok { color: #27AE60; }
-    .gps-error { color: #E74C3C; }
-    .foto-status { font-size: 11px; color: #27AE60; margin-top: 4px; }
+
+    /* BG EFFECTS */
+    .bg-effects { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+    .bg-effects .orb { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.12; animation: float 20s ease-in-out infinite; }
+    .bg-effects .orb:nth-child(1) { width: 500px; height: 500px; background: var(--accent-blue); top: -10%; left: -10%; }
+    .bg-effects .orb:nth-child(2) { width: 400px; height: 400px; background: var(--accent-cyan); bottom: -10%; right: -10%; animation-delay: -7s; }
+    .bg-effects .orb:nth-child(3) { width: 300px; height: 300px; background: var(--accent-purple); top: 40%; left: 50%; animation-delay: -14s; }
+    @keyframes float { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(30px,-40px) scale(1.05)} 66%{transform:translate(-20px,20px) scale(0.95)} }
+    .grid-overlay { position: fixed; inset: 0; z-index: 0; pointer-events: none; background-image: linear-gradient(rgba(59,130,246,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(59,130,246,0.03) 1px, transparent 1px); background-size: 60px 60px; }
+
+    /* APP */
+    .app-wrapper { position: relative; z-index: 1; min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; align-items: center; padding: 16px 16px 32px; }
+
+    /* TOP BAR */
+    .top-bar { width: 100%; max-width: 440px; display: flex; align-items: center; justify-content: space-between; padding: 8px 0; margin-bottom: 12px; }
+    .top-bar .logo-area { display: flex; align-items: center; gap: 10px; }
+    .top-bar .logo-icon { width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan)); display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(59,130,246,0.3); line-height: 1; }
+    .logo-icon .logo-gcv { font-size: 13px; font-weight: 900; color: white; letter-spacing: 0.5px; }
+    .logo-icon .logo-dot { width: 14px; height: 2px; background: rgba(255,255,255,0.5); border-radius: 1px; margin-top: 1px; }
+    .top-bar .logo-text { font-size: 14px; font-weight: 700; letter-spacing: 1.5px; color: var(--text-primary); }
+    .top-bar .logo-sub { font-size: 9px; font-weight: 500; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; }
+    .top-bar .status-pill { display: flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 20px; background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2); font-size: 10px; font-weight: 600; color: var(--accent-green); text-transform: uppercase; letter-spacing: 1px; }
+    .status-pill .pulse-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-green); animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.8)} }
+
+    /* GREETING */
+    .greeting-card { width: 100%; max-width: 440px; background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: var(--radius-xl); padding: 20px 22px; margin-bottom: 14px; box-shadow: var(--shadow-glow); transition: all 0.5s cubic-bezier(0.4,0,0.2,1); }
+    .greeting-text { font-size: 20px; font-weight: 700; color: var(--text-primary); line-height: 1.3; margin-bottom: 4px; }
+    .greeting-sub { font-size: 12px; color: var(--text-secondary); }
+    .greeting-card .last-record { margin-top: 12px; padding: 10px 14px; background: rgba(59,130,246,0.06); border-radius: var(--radius-md); border: 1px solid rgba(59,130,246,0.1); font-size: 11px; color: var(--text-secondary); display: none; }
+    .last-record strong { color: var(--accent-cyan); font-weight: 600; }
+
+    /* CLOCK */
+    .clock-section { width: 100%; max-width: 440px; text-align: center; margin-bottom: 14px; }
+    .clock-display { font-family: 'JetBrains Mono', monospace; font-size: 56px; font-weight: 700; background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-cyan) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: 3px; line-height: 1; filter: drop-shadow(0 0 20px rgba(6,182,212,0.15)); }
+    .clock-seconds { font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: 400; color: var(--accent-blue); vertical-align: super; margin-left: 2px; opacity: 0.7; }
+    .date-display { font-size: 12px; color: var(--text-muted); font-weight: 500; margin-top: 6px; letter-spacing: 0.5px; }
+
+    /* TIMELINE */
+    .timeline-strip { width: 100%; max-width: 440px; display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); margin-bottom: 14px; }
+    .timeline-item { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
+    .timeline-item .tl-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; background: rgba(100,116,139,0.15); border: 2px solid rgba(100,116,139,0.2); transition: all 0.4s ease; }
+    .timeline-item .tl-label { font-size: 8px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; }
+    .timeline-item .tl-time { font-size: 11px; font-weight: 700; color: var(--text-secondary); font-family: 'JetBrains Mono', monospace; }
+    .timeline-item.done .tl-icon { background: rgba(16,185,129,0.15); border-color: rgba(16,185,129,0.4); }
+    .timeline-item.done .tl-time { color: var(--accent-green); }
+    .timeline-item.active .tl-icon { background: rgba(59,130,246,0.2); border-color: var(--accent-blue); box-shadow: 0 0 12px rgba(59,130,246,0.3); animation: pulse 2s ease-in-out infinite; }
+    .timeline-item.active .tl-label { color: var(--accent-blue); }
+    .timeline-connector { width: 20px; height: 2px; background: rgba(100,116,139,0.2); border-radius: 1px; margin-bottom: 18px; }
+    .timeline-connector.done { background: var(--accent-green); }
+
+    /* FORM CARD */
+    .form-card { width: 100%; max-width: 440px; background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: var(--radius-xl); padding: 22px; margin-bottom: 14px; box-shadow: var(--shadow-glow); }
+    .field-group { margin-bottom: 16px; }
+    .field-label { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 8px; }
+    .field-label .label-icon { font-size: 13px; }
+    .select-wrapper { position: relative; }
+    .select-wrapper select { width: 100%; padding: 14px 16px; padding-right: 40px; background: rgba(12,20,38,0.8); border: 1px solid rgba(59,130,246,0.15); border-radius: var(--radius-md); color: var(--text-primary); font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 500; appearance: none; -webkit-appearance: none; cursor: pointer; transition: all 0.3s ease; }
+    .select-wrapper select:focus { outline: none; border-color: var(--accent-blue); box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+    .select-wrapper select option { background: var(--navy-dark); color: var(--text-primary); }
+    .select-wrapper::after { content: '▾'; position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 14px; pointer-events: none; }
+
+    /* CAMERA */
+    .camera-card { width: 100%; max-width: 440px; background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: var(--radius-xl); padding: 22px; margin-bottom: 14px; box-shadow: var(--shadow-glow); }
+    .camera-viewport { position: relative; width: 100%; aspect-ratio: 4/3; background: var(--navy-dark); border-radius: var(--radius-lg); overflow: hidden; border: 2px solid rgba(59,130,246,0.1); }
+    .camera-viewport video, .camera-viewport img { width: 100%; height: 100%; object-fit: cover; }
+    .face-guide { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+    .face-guide .guide-circle { width: 55%; aspect-ratio: 3/4; border: 2px dashed rgba(59,130,246,0.35); border-radius: 50%; animation: guideBreath 3s ease-in-out infinite; }
+    @keyframes guideBreath { 0%,100%{transform:scale(1);opacity:0.4} 50%{transform:scale(1.02);opacity:0.7} }
+    .face-guide .guide-text { position: absolute; bottom: 12px; font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1.5px; }
+    .camera-flash { position: absolute; inset: 0; background: white; opacity: 0; pointer-events: none; z-index: 10; transition: opacity 0.1s ease; }
+    .camera-flash.active { opacity: 0.8; transition: opacity 0.05s ease; }
+    .camera-controls { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 14px; }
+    .btn-shutter { width: 60px; height: 60px; border-radius: 50%; background: transparent; border: 3px solid var(--accent-blue); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease; }
+    .btn-shutter::after { content: ''; width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan)); transition: all 0.15s ease; }
+    .btn-shutter:active::after { transform: scale(0.85); }
+    .btn-retake { padding: 10px 20px; border-radius: 25px; background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.25); color: var(--accent-blue); font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; display: none; transition: all 0.3s ease; }
+    .photo-badge { display: none; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 20px; background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.25); font-size: 11px; font-weight: 600; color: var(--accent-green); }
+
+    /* INFO CHIPS */
+    .info-chips { width: 100%; max-width: 440px; display: flex; gap: 10px; margin-bottom: 14px; }
+    .chip { flex: 1; display: flex; align-items: center; gap: 8px; padding: 12px 14px; background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); transition: all 0.4s ease; }
+    .chip .chip-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+    .chip .chip-info { display: flex; flex-direction: column; }
+    .chip .chip-label { font-size: 9px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+    .chip .chip-value { font-size: 12px; font-weight: 700; color: var(--text-primary); }
+    .chip.gps .chip-icon { background: rgba(59,130,246,0.12); }
+    .chip.gps.ok { border-color: rgba(16,185,129,0.2); }
+    .chip.gps.ok .chip-icon { background: rgba(16,185,129,0.12); }
+    .chip.gps.ok .chip-value { color: var(--accent-green); }
+    .chip.gps.error { border-color: rgba(239,68,68,0.2); }
+    .chip.gps.error .chip-icon { background: rgba(239,68,68,0.12); }
+    .chip.gps.error .chip-value { color: var(--accent-red); }
+    .chip.device .chip-icon { background: rgba(139,92,246,0.12); }
+
+    /* DUPLICATE WARNING */
+    .duplicate-warning { width: 100%; max-width: 440px; display: none; padding: 14px 18px; background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.25); border-radius: var(--radius-lg); margin-bottom: 14px; font-size: 12px; color: var(--accent-amber); font-weight: 500; text-align: center; }
+
+    /* DISTANCE WARNING */
+    .distance-warning { width: 100%; max-width: 440px; display: none; padding: 14px 18px; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25); border-radius: var(--radius-lg); margin-bottom: 14px; font-size: 12px; color: var(--accent-red); font-weight: 500; text-align: center; }
+
+    /* REGISTER BUTTON */
+    .btn-register-wrapper { width: 100%; max-width: 440px; margin-bottom: 16px; }
+    .btn-register { width: 100%; padding: 18px; background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan)); border: none; border-radius: var(--radius-lg); color: white; font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; position: relative; overflow: hidden; transition: all 0.4s cubic-bezier(0.4,0,0.2,1); box-shadow: 0 4px 20px rgba(59,130,246,0.25); }
+    .btn-register:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(59,130,246,0.35); }
+    .btn-register:active:not(:disabled) { transform: translateY(0); }
+    .btn-register:disabled { background: rgba(100,116,139,0.2); color: var(--text-muted); cursor: not-allowed; box-shadow: none; }
+    .btn-register::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent); transition: left 0.6s ease; }
+    .btn-register:hover:not(:disabled)::before { left: 100%; }
+
+    /* TOAST */
+    .toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; width: 90%; max-width: 420px; }
+    .toast { display: none; padding: 16px 20px; border-radius: var(--radius-lg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); font-size: 13px; font-weight: 600; text-align: center; animation: slideDown 0.4s cubic-bezier(0.4,0,0.2,1); box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+    @keyframes slideDown { from{transform:translateY(-30px);opacity:0} to{transform:translateY(0);opacity:1} }
+    .toast.success { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: var(--accent-green); }
+    .toast.error { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: var(--accent-red); }
+    .toast.loading { background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.3); color: var(--accent-amber); }
+
+    /* LOADING */
+    .loading-overlay { position: fixed; inset: 0; z-index: 2000; background: var(--navy-deep); display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.6s ease; }
+    .loading-overlay.hide { opacity: 0; pointer-events: none; }
+    .loading-spinner { width: 48px; height: 48px; border-radius: 50%; border: 3px solid rgba(59,130,246,0.1); border-top-color: var(--accent-blue); animation: spin 0.8s linear infinite; }
+    @keyframes spin { to{transform:rotate(360deg)} }
+    .loading-overlay .load-brand { margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; }
+    .loading-overlay .load-brand .brand-icon { width: 60px; height: 60px; border-radius: 16px; background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan)); display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 8px 30px rgba(59,130,246,0.3); margin-bottom: 16px; }
+    .brand-icon .brand-gcv { font-size: 20px; font-weight: 900; color: white; }
+    .brand-icon .brand-line { width: 22px; height: 2px; background: rgba(255,255,255,0.5); border-radius: 1px; margin-top: 2px; }
+    .loading-overlay .load-text { margin-top: 16px; font-size: 12px; font-weight: 600; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; }
+
+    /* SUCCESS */
+    .success-overlay { position: fixed; inset: 0; z-index: 3000; background: rgba(8,14,26,0.92); backdrop-filter: blur(10px); display: none; flex-direction: column; align-items: center; justify-content: center; }
+    .success-overlay.show { display: flex; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+    .success-check { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-green), #34D399); display: flex; align-items: center; justify-content: center; font-size: 40px; animation: popIn 0.5s cubic-bezier(0.68,-0.55,0.27,1.55); box-shadow: 0 0 40px rgba(16,185,129,0.3); }
+    @keyframes popIn { 0%{transform:scale(0)} 100%{transform:scale(1)} }
+    .success-overlay .success-title { font-size: 22px; font-weight: 800; color: var(--text-primary); margin-top: 20px; }
+    .success-overlay .success-detail { font-size: 13px; color: var(--text-secondary); margin-top: 8px; text-align: center; line-height: 1.5; padding: 0 20px; }
+
+    /* FOOTER */
+    .app-footer { width: 100%; max-width: 440px; text-align: center; padding: 8px 0; }
+    .app-footer p { font-size: 9px; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; font-weight: 500; }
+    .app-footer .version { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: rgba(100,116,139,0.4); margin-top: 4px; }
+
+    @media (max-width: 380px) { .clock-display{font-size:44px} .clock-seconds{font-size:18px} .greeting-text{font-size:18px} }
   </style>
 </head>
 <body>
 
-<div class="container">
-  <div class="header">
-    <h1>REGISTRO DE PONTO</h1>
-    <p>CRV/LAS Logística</p>
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="load-brand">
+    <div class="brand-icon"><span class="brand-gcv">GCV</span><span class="brand-line"></span></div>
   </div>
-  
-  <div class="clock" id="relogio">--:--:--</div>
-  <div class="date-display" id="dataDisplay">Carregando...</div>
-  
-  <label>Funcionário</label>
-  <select id="nome">
-    <option value="">Selecione seu nome...</option>
-    <option value="LUCAS">LUCAS</option>
-    <option value="TASSIO">TASSIO</option>
-    <option value="AMARAL">AMARAL</option>
-    <option value="ALEX">ALEX</option>
-  </select>
-  
-  <label>Tipo de Registro</label>
-  <select id="tipo">
-    <option value="">Selecione...</option>
-    <option value="Entrada">Entrada</option>
-    <option value="Saída Almoço">Saída Almoço</option>
-    <option value="Retorno Almoço">Retorno Almoço</option>
-    <option value="Saída Final">Saída Final</option>
-  </select>
-  
-  <div class="camera-area">
-    <label>Selfie no Local</label>
-    <div class="camera-preview" id="cameraBox">
+  <div class="loading-spinner"></div>
+  <div class="load-text">Grupo Carlos Vaz</div>
+</div>
+
+<!-- SUCCESS -->
+<div class="success-overlay" id="successOverlay">
+  <div class="success-check">✓</div>
+  <div class="success-title">Ponto Registrado!</div>
+  <div class="success-detail" id="successDetail"></div>
+</div>
+
+<!-- TOAST -->
+<div class="toast-container"><div class="toast" id="toast"></div></div>
+
+<!-- BG -->
+<div class="bg-effects"><div class="orb"></div><div class="orb"></div><div class="orb"></div></div>
+<div class="grid-overlay"></div>
+
+<!-- APP -->
+<div class="app-wrapper">
+
+  <!-- TOP BAR -->
+  <div class="top-bar">
+    <div class="logo-area">
+      <div class="logo-icon"><span class="logo-gcv">GCV</span><span class="logo-dot"></span></div>
+      <div>
+        <div class="logo-text">GRUPO CARLOS VAZ</div>
+        <div class="logo-sub">Ponto Digital</div>
+      </div>
+    </div>
+    <div class="status-pill"><div class="pulse-dot"></div><span>Online</span></div>
+  </div>
+
+  <!-- GREETING -->
+  <div class="greeting-card" id="greetingCard">
+    <div class="greeting-text" id="greetingText">Selecione seu nome abaixo</div>
+    <div class="greeting-sub" id="greetingSub">Sistema de ponto digital com verificação biométrica e GPS</div>
+    <div class="last-record" id="lastRecord"></div>
+  </div>
+
+  <!-- CLOCK -->
+  <div class="clock-section">
+    <div><span class="clock-display" id="clockHM">--:--</span><span class="clock-seconds" id="clockS">00</span></div>
+    <div class="date-display" id="dateDisplay">Carregando...</div>
+  </div>
+
+  <!-- TIMELINE -->
+  <div class="timeline-strip" id="timelineStrip">
+    <div class="timeline-item" id="tl-entrada"><div class="tl-icon">☀️</div><div class="tl-label">Entrada</div><div class="tl-time" id="tl-entrada-time">--:--</div></div>
+    <div class="timeline-connector" id="tc1"></div>
+    <div class="timeline-item" id="tl-saida-almoco"><div class="tl-icon">🍽️</div><div class="tl-label">Almoço</div><div class="tl-time" id="tl-saida-almoco-time">--:--</div></div>
+    <div class="timeline-connector" id="tc2"></div>
+    <div class="timeline-item" id="tl-retorno"><div class="tl-icon">🔄</div><div class="tl-label">Retorno</div><div class="tl-time" id="tl-retorno-time">--:--</div></div>
+    <div class="timeline-connector" id="tc3"></div>
+    <div class="timeline-item" id="tl-saida-final"><div class="tl-icon">🌙</div><div class="tl-label">Saída</div><div class="tl-time" id="tl-saida-final-time">--:--</div></div>
+  </div>
+
+  <!-- FORM -->
+  <div class="form-card">
+    <div class="field-group">
+      <div class="field-label"><span class="label-icon">👤</span> Colaborador</div>
+      <div class="select-wrapper">
+        <select id="nome">
+          <option value="">Selecione seu nome...</option>
+          <option value="LUCAS">LUCAS</option>
+          <option value="TASSIO">TASSIO</option>
+          <option value="AMARAL">AMARAL</option>
+          <option value="ALEX">ALEX</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label"><span class="label-icon">📋</span> Tipo de Registro</div>
+      <div class="select-wrapper">
+        <select id="tipo">
+          <option value="">Selecione o tipo...</option>
+          <option value="Entrada">☀️ Entrada</option>
+          <option value="Saída Almoço">🍽️ Saída para Almoço</option>
+          <option value="Retorno Almoço">🔄 Retorno do Almoço</option>
+          <option value="Saída Final">🌙 Saída Final</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- CAMERA -->
+  <div class="camera-card">
+    <div class="field-label"><span class="label-icon">📸</span> Verificação Facial</div>
+    <div class="camera-viewport" id="cameraViewport">
       <video id="video" autoplay playsinline muted></video>
       <canvas id="canvas" style="display:none;"></canvas>
       <img id="preview" style="display:none;">
+      <div class="camera-flash" id="cameraFlash"></div>
+      <div class="face-guide" id="faceGuide"><div class="guide-circle"></div><div class="guide-text">Posicione seu rosto</div></div>
     </div>
-    <button class="btn-camera" id="btnCapturar" onclick="tirarFoto()">📸 Tirar Foto</button>
-    <button class="btn-camera" id="btnNova" onclick="novaFoto()" style="display:none;">🔄 Nova Foto</button>
-    <div class="foto-status" id="fotoStatus"></div>
+    <div class="camera-controls">
+      <button class="btn-shutter" id="btnShutter" onclick="tirarFoto()" title="Capturar"></button>
+      <button class="btn-retake" id="btnRetake" onclick="novaFoto()">↻ Nova foto</button>
+      <div class="photo-badge" id="photoBadge">✓ Foto capturada</div>
+    </div>
   </div>
-  
-  <div class="gps-status" id="gpsStatus">📍 Obtendo localização...</div>
-  
-  <button class="btn-registrar" id="btnRegistrar" onclick="enviarPonto()" disabled>
-    REGISTRAR PONTO
-  </button>
-  
-  <div class="status-bar" id="statusBar"></div>
+
+  <!-- INFO CHIPS -->
+  <div class="info-chips">
+    <div class="chip gps" id="chipGps">
+      <div class="chip-icon">📍</div>
+      <div class="chip-info"><span class="chip-label">Localização</span><span class="chip-value" id="gpsValue">Obtendo...</span></div>
+    </div>
+    <div class="chip device">
+      <div class="chip-icon">📱</div>
+      <div class="chip-info"><span class="chip-label">Dispositivo</span><span class="chip-value" id="deviceValue">Detectando...</span></div>
+    </div>
+  </div>
+
+  <!-- WARNINGS -->
+  <div class="distance-warning" id="distanceWarning">🚫 <span id="distanceText"></span></div>
+  <div class="duplicate-warning" id="duplicateWarning">⚠️ <span id="duplicateText"></span></div>
+
+  <!-- REGISTER -->
+  <div class="btn-register-wrapper">
+    <button class="btn-register" id="btnRegistrar" onclick="enviarPonto()" disabled>Registrar Ponto</button>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="app-footer">
+    <p>Grupo Carlos Vaz — Ponto Digital</p>
+    <div class="version">v3.0 Premium</div>
+  </div>
+
 </div>
 
 <script>
-  // ===== CONFIGURAÇÃO =====
-  var API_URL = 'https://script.google.com/macros/s/AKfycbzVJbAce4QVhOoyQz6j1iiBmW8OxdkC57P5qx64W1GFuylAZ9k6UvpcbDKGoKfugQWQeA/exec';
-  // ========================
-  
-  var latitude = null;
-  var longitude = null;
-  var selfieBase64 = null;
-  var stream = null;
-  
-  // RELÓGIO
-  function atualizarRelogio() {
-    var agora = new Date();
-    var h = String(agora.getHours()).padStart(2, '0');
-    var m = String(agora.getMinutes()).padStart(2, '0');
-    var s = String(agora.getSeconds()).padStart(2, '0');
-    document.getElementById('relogio').textContent = h + ':' + m + ':' + s;
-    
-    var dias = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
-    var meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-    document.getElementById('dataDisplay').textContent = 
-      dias[agora.getDay()] + ', ' + agora.getDate() + ' de ' + meses[agora.getMonth()] + ' de ' + agora.getFullYear();
-  }
-  setInterval(atualizarRelogio, 1000);
-  atualizarRelogio();
-  
-  // CÂMERA
-  function iniciarCamera() {
-    navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }
-    })
-    .then(function(s) {
-      stream = s;
-      document.getElementById('video').srcObject = s;
-      document.getElementById('fotoStatus').textContent = '📷 Câmera pronta';
-      document.getElementById('fotoStatus').style.color = '#27AE60';
-    })
-    .catch(function(err) {
-      document.getElementById('fotoStatus').textContent = '❌ Câmera: ' + err.message;
-      document.getElementById('fotoStatus').style.color = '#E74C3C';
-    });
-  }
-  iniciarCamera();
-  
-  function tirarFoto() {
-    var video = document.getElementById('video');
-    var canvas = document.getElementById('canvas');
-    var preview = document.getElementById('preview');
-    
-    canvas.width = video.videoWidth || 640;
-    canvas.height = video.videoHeight || 480;
-    canvas.getContext('2d').drawImage(video, 0, 0);
-    
-    var dataUrl = canvas.toDataURL('image/png');
-    selfieBase64 = dataUrl.split(',')[1];
-    preview.src = dataUrl;
-    
-    video.style.display = 'none';
-    preview.style.display = 'block';
-    document.getElementById('btnCapturar').style.display = 'none';
-    document.getElementById('btnNova').style.display = 'inline-block';
-    document.getElementById('fotoStatus').textContent = '✅ Foto capturada!';
-    document.getElementById('fotoStatus').style.color = '#27AE60';
-    
-    verificarFormulario();
-  }
-  
-  function novaFoto() {
-    document.getElementById('video').style.display = 'block';
-    document.getElementById('preview').style.display = 'none';
-    document.getElementById('btnCapturar').style.display = 'inline-block';
-    document.getElementById('btnNova').style.display = 'none';
-    document.getElementById('fotoStatus').textContent = '📷 Câmera pronta';
-    selfieBase64 = null;
-    verificarFormulario();
-  }
-  
-  // GPS
-  function obterGPS() {
-    if (!navigator.geolocation) {
-      document.getElementById('gpsStatus').textContent = '❌ GPS não suportado';
-      document.getElementById('gpsStatus').className = 'gps-status gps-error';
-      return;
-    }
-    
-    navigator.geolocation.getCurrentPosition(
-      function(pos) {
-        latitude = pos.coords.latitude;
-        longitude = pos.coords.longitude;
-        document.getElementById('gpsStatus').textContent = '📍 Localização obtida ✅';
-        document.getElementById('gpsStatus').className = 'gps-status gps-ok';
-        verificarFormulario();
-      },
-      function(err) {
-        document.getElementById('gpsStatus').textContent = '❌ GPS: ' + err.message;
-        document.getElementById('gpsStatus').className = 'gps-status gps-error';
-        // Tentar novamente em 3 segundos
-        setTimeout(obterGPS, 3000);
-      },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-    );
-  }
-  obterGPS();
-  
-  // VALIDAÇÃO
-  function verificarFormulario() {
-    var nome = document.getElementById('nome').value;
-    var tipo = document.getElementById('tipo').value;
-    document.getElementById('btnRegistrar').disabled = !(nome && tipo && selfieBase64 && latitude);
-  }
-  
-  document.getElementById('nome').addEventListener('change', verificarFormulario);
-  document.getElementById('tipo').addEventListener('change', verificarFormulario);
-  
-  // ENVIAR
-  function enviarPonto() {
-    var btn = document.getElementById('btnRegistrar');
-    var status = document.getElementById('statusBar');
-    
-    btn.disabled = true;
-    btn.textContent = 'REGISTRANDO...';
-    status.style.display = 'block';
-    status.className = 'status-bar status-loading';
-    status.textContent = '⏳ Enviando dados ao servidor...';
-    
-    var dados = {
-      nome: document.getElementById('nome').value,
-      tipo: document.getElementById('tipo').value,
-      selfie: selfieBase64,
-      latitude: latitude,
-      longitude: longitude,
-      dispositivo: navigator.userAgent
-    };
-    
-    fetch(API_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(dados)
-    })
-    .then(function() {
-      status.className = 'status-bar status-success';
-      status.textContent = '✅ Ponto registrado com sucesso!';
-      
-      setTimeout(function() {
-        document.getElementById('nome').value = '';
-        document.getElementById('tipo').value = '';
-        novaFoto();
-        obterGPS();
-        btn.textContent = 'REGISTRAR PONTO';
-        btn.disabled = true;
-        status.style.display = 'none';
-      }, 4000);
-    })
-    .catch(function(err) {
-      status.className = 'status-bar status-error';
-      status.textContent = '❌ Erro: ' + err.message;
-      btn.disabled = false;
-      btn.textContent = 'REGISTRAR PONTO';
-    });
-  }
-</script>
+// ===== CONFIG =====
+var API_URL = 'https://script.google.com/macros/s/AKfycbzVJbAce4QVhOoyQz6j1iiBmW8OxdkC57P5qx64W1GFuylAZ9k6UvpcbDKGoKfugQWQeA/exec';
+var LAT_EMPRESA = -14.842472, LNG_EMPRESA = -39.987250, RAIO_PERMITIDO = 150;
+// =================
 
+var latitude = null, longitude = null, selfieBase64 = null, stream = null;
+var todayRecords = {};
+var gpsTimestamp = 0;
+
+// ===== LOADING =====
+window.addEventListener('load', function() {
+  setTimeout(function() {
+    document.getElementById('loadingOverlay').classList.add('hide');
+    setTimeout(function() { document.getElementById('loadingOverlay').style.display = 'none'; }, 600);
+  }, 2000);
+});
+
+// ===== CLOCK =====
+var dias = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
+var meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+function tick() {
+  var n = new Date();
+  document.getElementById('clockHM').textContent = String(n.getHours()).padStart(2,'0') + ':' + String(n.getMinutes()).padStart(2,'0');
+  document.getElementById('clockS').textContent = String(n.getSeconds()).padStart(2,'0');
+  document.getElementById('dateDisplay').textContent = dias[n.getDay()] + ', ' + n.getDate() + ' de ' + meses[n.getMonth()] + ' de ' + n.getFullYear();
+}
+setInterval(tick, 1000); tick();
+
+// ===== GREETING =====
+function atualizarSaudacao() {
+  var nome = document.getElementById('nome').value;
+  var gt = document.getElementById('greetingText');
+  var gs = document.getElementById('greetingSub');
+  var lr = document.getElementById('lastRecord');
+  if (!nome) {
+    gt.textContent = 'Selecione seu nome abaixo';
+    gs.textContent = 'Sistema de ponto digital com verificação biométrica e GPS';
+    lr.style.display = 'none'; atualizarTimeline(null); verificarDuplicata(); return;
+  }
+  var h = new Date().getHours();
+  var s = h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite';
+  gt.textContent = s + ', ' + nome.charAt(0) + nome.slice(1).toLowerCase() + '!';
+  gs.textContent = 'Registre seu ponto para hoje';
+  if (todayRecords[nome]) {
+    var recs = todayRecords[nome];
+    var tipos = ['Entrada','Saída Almoço','Retorno Almoço','Saída Final'];
+    var lt = '', lti = '';
+    for (var i = tipos.length - 1; i >= 0; i--) { if (recs[tipos[i]]) { lt = tipos[i]; lti = recs[tipos[i]]; break; } }
+    if (lt) { lr.innerHTML = 'Último registro: <strong>' + lt + '</strong> às <strong>' + lti + '</strong>'; lr.style.display = 'block'; }
+    else lr.style.display = 'none';
+    atualizarTimeline(recs);
+  } else { lr.style.display = 'none'; atualizarTimeline(null); }
+  verificarDuplicata();
+}
+
+// ===== TIMELINE =====
+function atualizarTimeline(recs) {
+  var map = { 'Entrada':['tl-entrada','tl-entrada-time',null], 'Saída Almoço':['tl-saida-almoco','tl-saida-almoco-time','tc1'], 'Retorno Almoço':['tl-retorno','tl-retorno-time','tc2'], 'Saída Final':['tl-saida-final','tl-saida-final-time','tc3'] };
+  var tipos = ['Entrada','Saída Almoço','Retorno Almoço','Saída Final'];
+  var next = true;
+  for (var i = 0; i < tipos.length; i++) {
+    var t = tipos[i], m = map[t];
+    var el = document.getElementById(m[0]), te = document.getElementById(m[1]);
+    el.classList.remove('done','active');
+    if (m[2]) document.getElementById(m[2]).classList.remove('done');
+    if (recs && recs[t]) { el.classList.add('done'); te.textContent = recs[t]; if (m[2]) document.getElementById(m[2]).classList.add('done'); next = true; }
+    else if (next && (recs || i === 0)) { el.classList.add('active'); te.textContent = '--:--'; next = false; }
+    else te.textContent = '--:--';
+  }
+}
+
+// ===== DUPLICATE =====
+function verificarDuplicata() {
+  var nome = document.getElementById('nome').value, tipo = document.getElementById('tipo').value;
+  var w = document.getElementById('duplicateWarning'), wt = document.getElementById('duplicateText');
+  if (nome && tipo && todayRecords[nome] && todayRecords[nome][tipo]) {
+    w.style.display = 'block';
+    wt.textContent = 'Você já registrou "' + tipo + '" hoje às ' + todayRecords[nome][tipo] + '. Um novo registro substituirá o anterior.';
+  } else w.style.display = 'none';
+  verificarFormulario();
+}
+
+// ===== DISTANCE CHECK =====
+function calcDistancia(lat1, lon1, lat2, lon2) {
+  var R = 6371000, dLat = (lat2-lat1)*Math.PI/180, dLon = (lon2-lon1)*Math.PI/180;
+  var a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+function verificarDistancia() {
+  var dw = document.getElementById('distanceWarning'), dt = document.getElementById('distanceText');
+  if (latitude !== null && longitude !== null) {
+    var d = calcDistancia(latitude, longitude, LAT_EMPRESA, LNG_EMPRESA);
+    if (d > RAIO_PERMITIDO) {
+      dw.style.display = 'block';
+      dt.textContent = 'Você está a ' + Math.round(d) + 'm do local. Máximo permitido: ' + RAIO_PERMITIDO + 'm. O registro será marcado como FORA DO RAIO.';
+    } else dw.style.display = 'none';
+  }
+}
+
+// ===== CAMERA =====
+function iniciarCamera() {
+  navigator.mediaDevices.getUserMedia({ video: { facingMode:'user', width:{ideal:320}, height:{ideal:240} } })
+  .then(function(s) { stream = s; document.getElementById('video').srcObject = s; })
+  .catch(function(e) { showToast('Câmera: ' + e.message, 'error'); });
+}
+iniciarCamera();
+
+function tirarFoto() {
+  var v = document.getElementById('video'), c = document.getElementById('canvas'), p = document.getElementById('preview'), f = document.getElementById('cameraFlash');
+  f.classList.add('active'); setTimeout(function(){f.classList.remove('active');}, 200);
+  c.width = v.videoWidth || 320; c.height = v.videoHeight || 240;
+  c.getContext('2d').drawImage(v, 0, 0);
+  var url = c.toDataURL('image/jpeg', 0.5);
+  selfieBase64 = url.split(',')[1];
+  p.src = url;
+  v.style.display = 'none'; p.style.display = 'block';
+  document.getElementById('faceGuide').style.display = 'none';
+  document.getElementById('btnShutter').style.display = 'none';
+  document.getElementById('btnRetake').style.display = 'inline-block';
+  document.getElementById('photoBadge').style.display = 'flex';
+  verificarFormulario();
+}
+
+function novaFoto() {
+  document.getElementById('video').style.display = 'block';
+  document.getElementById('preview').style.display = 'none';
+  document.getElementById('faceGuide').style.display = 'flex';
+  document.getElementById('btnShutter').style.display = 'flex';
+  document.getElementById('btnRetake').style.display = 'none';
+  document.getElementById('photoBadge').style.display = 'none';
+  selfieBase64 = null; verificarFormulario();
+}
+
+// ===== GPS (com cache de 60s) =====
+function obterGPS() {
+  if (!navigator.geolocation) {
+    document.getElementById('gpsValue').textContent = 'Não suportado';
+    document.getElementById('chipGps').classList.add('error'); return;
+  }
+  // Se temos coordenadas recentes (< 60s), não buscar de novo
+  if (latitude !== null && (Date.now() - gpsTimestamp) < 60000) return;
+
+  navigator.geolocation.getCurrentPosition(
+    function(pos) {
+      latitude = pos.coords.latitude; longitude = pos.coords.longitude;
+      gpsTimestamp = Date.now();
+      document.getElementById('gpsValue').textContent = 'Conectado ✓';
+      document.getElementById('chipGps').classList.remove('error');
+      document.getElementById('chipGps').classList.add('ok');
+      verificarDistancia(); verificarFormulario();
+    },
+    function() {
+      document.getElementById('gpsValue').textContent = 'Tentando...';
+      document.getElementById('chipGps').classList.add('error');
+      setTimeout(obterGPS, 3000);
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+  );
+}
+obterGPS();
+
+// Device detect
+(function(){ var u=navigator.userAgent; var d='Desktop'; if(/Android/i.test(u))d='Android'; else if(/iPhone|iPad/i.test(u))d='iPhone'; else if(/Mobile/i.test(u))d='Mobile'; document.getElementById('deviceValue').textContent=d; })();
+
+// ===== VALIDATION =====
+function verificarFormulario() {
+  var ok = document.getElementById('nome').value && document.getElementById('tipo').value && selfieBase64 && latitude !== null;
+  document.getElementById('btnRegistrar').disabled = !ok;
+}
+document.getElementById('nome').addEventListener('change', function(){ atualizarSaudacao(); autoSuggestType(); });
+document.getElementById('tipo').addEventListener('change', verificarDuplicata);
+
+// ===== AUTO SUGGEST =====
+function autoSuggestType() {
+  var nome = document.getElementById('nome').value;
+  if (!nome) return;
+  var recs = todayRecords[nome];
+  var tipos = ['Entrada','Saída Almoço','Retorno Almoço','Saída Final'];
+  var next = 'Entrada';
+  if (recs) { for (var i = 0; i < tipos.length; i++) { if (!recs[tipos[i]]) { next = tipos[i]; break; } if (i === tipos.length-1) next = ''; } }
+  if (next) document.getElementById('tipo').value = next;
+  verificarDuplicata();
+}
+
+// ===== TOAST =====
+function showToast(msg, type) {
+  var t = document.getElementById('toast');
+  t.className = 'toast ' + type; t.textContent = msg; t.style.display = 'block';
+  setTimeout(function(){t.style.display='none';}, 4000);
+}
+
+// ===== SEND (OTIMIZADO) =====
+function enviarPonto() {
+  var btn = document.getElementById('btnRegistrar');
+  var nome = document.getElementById('nome').value;
+  var tipo = document.getElementById('tipo').value;
+  btn.disabled = true; btn.textContent = 'Registrando...';
+
+  var dados = { nome: nome, tipo: tipo, selfie: selfieBase64, latitude: latitude, longitude: longitude, dispositivo: navigator.userAgent };
+
+  // Mostrar sucesso IMEDIATAMENTE (fire-and-forget) — o servidor processa em background
+  fetch(API_URL, { method: 'POST', mode: 'no-cors', headers: {'Content-Type':'application/json'}, body: JSON.stringify(dados) }).catch(function(){});
+
+  // Feedback instantâneo
+  if (!todayRecords[nome]) todayRecords[nome] = {};
+  var now = new Date();
+  var horaStr = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+  todayRecords[nome][tipo] = horaStr;
+
+  var d = latitude ? Math.round(calcDistancia(latitude, longitude, LAT_EMPRESA, LNG_EMPRESA)) : '?';
+  var statusLocal = (d !== '?' && d <= RAIO_PERMITIDO) ? '✅ Dentro do raio' : '⚠️ ' + d + 'm do local';
+
+  var overlay = document.getElementById('successOverlay');
+  document.getElementById('successDetail').innerHTML =
+    '<strong>' + nome + '</strong><br>' +
+    tipo + ' — ' + horaStr + '<br>' +
+    '<span style="font-size:11px;color:var(--text-muted);">' + statusLocal + '</span>';
+  overlay.classList.add('show');
+
+  setTimeout(function() {
+    overlay.classList.remove('show');
+    document.getElementById('nome').value = '';
+    document.getElementById('tipo').value = '';
+    novaFoto(); obterGPS();
+    btn.textContent = 'Registrar Ponto'; btn.disabled = true;
+    document.getElementById('distanceWarning').style.display = 'none';
+    document.getElementById('duplicateWarning').style.display = 'none';
+    atualizarSaudacao();
+  }, 3000);
+}
+</script>
 </body>
 </html>
