@@ -590,12 +590,34 @@ function registrarPonto(){
   }else{enviar()}
 }
 
+/* ═══ SYNC COM PLANILHA ═══ */
+function syncComPlanilha(){
+  fetch(API_URL+'?sync=1')
+  .then(function(r){return r.json()})
+  .then(function(d){
+    registrosHoje = d.hoje || 0;
+    registrosMes = d.mes || 0;
+    localStorage.setItem('p_dh', String(registrosHoje));
+    localStorage.setItem('p_dm', String(registrosMes));
+    updateStats();
+
+    // Sincronizar timeline
+    if(d.timeline){
+      localStorage.setItem('p_tl', JSON.stringify(d.timeline));
+      loadTimeline();
+    }
+  }).catch(function(){
+    // Se falhar, usa localStorage normalmente
+  });
+}
+
 /* ═══ INIT ═══ */
 initClock();
 initGreeting();
 checkDayReset();
 updateStats();
 loadTimeline();
+syncComPlanilha();
 </script>
 </body>
 </html>
