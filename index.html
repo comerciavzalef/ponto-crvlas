@@ -555,7 +555,17 @@ function registrarPonto(){
 
   var agora=new Date();
   var horaStr=pad(agora.getHours())+':'+pad(agora.getMinutes())+':'+pad(agora.getSeconds());
-  var payload={colaborador:colab,tipo:tipoSelecionado,foto:selfieBase64,latitude:0,longitude:0};
+  var payload = {
+  nome: colab,
+  tipo: tipoSelecionado === 'ENTRADA' ? 'Entrada' :
+        tipoSelecionado === 'SAÍDA ALMOÇO' ? 'Saída Almoço' :
+        tipoSelecionado === 'RETORNO ALMOÇO' ? 'Retorno Almoço' :
+        'Saída Final',
+  selfie: selfieBase64.replace(/^data:image\/(png|jpeg|jpg);base64,/, ''),
+  latitude: 0,
+  longitude: 0
+};
+
 
   function enviar(){
     fetch(API_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
