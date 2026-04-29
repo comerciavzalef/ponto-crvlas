@@ -1,62 +1,45 @@
 // ══════════════════════════════════════════════════════════════
-//  PONTO DIGITAL — app.js v6.0 (Arquitetura Sênior)
+//  PONTO DIGITAL — app.js v7.0 (Arquitetura Sênior Completa)
 //  Grupo Carlos Vaz — CRV/LAS
 // ══════════════════════════════════════════════════════════════
 
-// ── Config ───────────────────────────────────────────────────
-// Cole aqui a sua nova URL gerada pelo Google Apps Script
-var API_URL = 'https://script.google.com/macros/s/AKfycbzw_DCKo-0c3EMxWHgajCs8FxVYxtghYXSerldjBaTSu5lKsKqUYr5-vOLTYOuYsUFRUg/exec';
+var API_URL = 'https://script.google.com/macros/s/SUA_NOVA_URL_AQUI/exec';
 var SESSION_KEY = 'cv_ponto_sessao';
 var RAIO_LIMITE = 50; 
 var LAT_EMPRESA = -14.842472;
 var LNG_EMPRESA = -39.987250;
 
 var CREDS_OFFLINE = {
-  'LUCAS':  'lucas2026',
-  'TASSIO': 'tassio2026',
-  'AMARAL': 'amaral2026',
-  'ALEX':   'alex2026',
+  'LUCAS':  'lucas2026', 'TASSIO': 'tassio2026',
+  'AMARAL': 'amaral2026', 'ALEX':   'alex2026',
   'ALEF':   'GP.Carlos2026'
 };
 
-// ── State ────────────────────────────────────────────────────
 var sessao = null;
 var tipoSelecionado = '';
 var selfieData = '';
 var geoAtual = { lat: 0, lng: 0, dist: null, dentro: false };
 var refreshInterval = null;
 var stream = null;
+var avisoViagemFeito = false; // Controle do alerta do Gestor
 
-// ══════════════════════════════════════════════════════════════
-//  INIT — Verifica sessão salva
-// ══════════════════════════════════════════════════════════════
 (function () {
   var s = localStorage.getItem(SESSION_KEY);
   if (s) {
     try {
       sessao = JSON.parse(s);
-      if (sessao && sessao.nome) {
-        esconderLogin();
-        iniciarApp();
-        return;
-      }
-    } catch (e) { /* ignora */ }
+      if (sessao && sessao.nome) { esconderLogin(); iniciarApp(); return; }
+    } catch (e) { }
   }
 })();
 
 function toggleSenha() {
   var input = document.getElementById('loginPass');
   var icon = document.getElementById('eyeIcon');
-  if (input.type === 'password') {
-    input.type = 'text'; icon.textContent = '🙈';
-  } else {
-    input.type = 'password'; icon.textContent = '👁️';
-  }
+  if (input.type === 'password') { input.type = 'text'; icon.textContent = '🙈'; } 
+  else { input.type = 'password'; icon.textContent = '👁️'; }
 }
 
-// ══════════════════════════════════════════════════════════════
-//  LOGIN E LOGOUT (Corrigido Bug do Gestor)
-// ══════════════════════════════════════════════════════════════
 function fazerLogin() {
   var user = document.getElementById('loginUser').value.trim();
   var pass = document.getElementById('loginPass').value.trim();
@@ -64,10 +47,7 @@ function fazerLogin() {
   var btn = document.getElementById('loginBtn');
 
   err.textContent = '';
-  if (!user || !pass) {
-    err.textContent = 'Preencha todos os campos';
-    shakeLogin(); return;
-  }
+  if (!user || !pass) { err.textContent = 'Preencha todos os campos'; shakeLogin(); return; }
 
   btn.disabled = true; btn.textContent = 'Verificando...';
 
@@ -83,22 +63,16 @@ function fazerLogin() {
         sessao = { nome: d.nome, nivel: d.nivel, senha: pass };
         localStorage.setItem(SESSION_KEY, JSON.stringify(sessao));
         esconderLogin(); iniciarApp();
-      } else {
-        err.textContent = d.msg || 'Credenciais inválidas'; shakeLogin();
-      }
+      } else { err.textContent = d.msg || 'Credenciais inválidas'; shakeLogin(); }
     })
     .catch(function () {
       if (CREDS_OFFLINE[user] && CREDS_OFFLINE[user] === pass) {
         sessao = { nome: user, nivel: user === 'ALEF' ? 'gestor' : 'funcionario', senha: pass };
         localStorage.setItem(SESSION_KEY, JSON.stringify(sessao));
         esconderLogin(); iniciarApp();
-      } else {
-        err.textContent = 'Sem conexão e credenciais inválidas'; shakeLogin();
-      }
+      } else { err.textContent = 'Sem conexão e credenciais inválidas'; shakeLogin(); }
     })
-    .finally(function () {
-      btn.disabled = false; btn.textContent = 'Entrar';
-    });
+    .finally(function () { btn.disabled = false; btn.textContent = 'Entrar'; });
 }
 
 function shakeLogin() {
@@ -109,18 +83,15 @@ function shakeLogin() {
 
 function esconderLogin() { document.getElementById('loginScreen').classList.add('hidden'); }
 
-// MENTORIA: A função logout agora esconde tudo do gestor pro próximo usuário
 function logout() {
   sessao = null;
   localStorage.removeItem(SESSION_KEY);
   if (refreshInterval) clearInterval(refreshInterval);
   stopCamera();
   
-  // Limpa telas do gestor
   document.getElementById('badgeGestor').style.display = 'none';
   document.getElementById('gestorSection').classList.remove('show');
   
-  // Reseta app e volta pro login
   document.getElementById('mainApp').style.display = 'none';
   document.getElementById('loginScreen').classList.remove('hidden');
   document.getElementById('loginUser').value = '';
@@ -129,7 +100,7 @@ function logout() {
   document.getElementById('eyeIcon').textContent = '👁️';
   document.getElementById('loginError').textContent = '';
   
-  // Limpa o modo viagem se tiver ativo
+  avisoViagemFeito = false; // Reseta o aviso para o próximo login
   if(document.getElementById('viagemCheck')) document.getElementById('viagemCheck').checked = false;
   toggleViagem();
 }
@@ -137,15 +108,10 @@ function logout() {
 document.addEventListener('DOMContentLoaded', function () {
   var passField = document.getElementById('loginPass');
   if (passField) passField.addEventListener('keydown', function (e) { if (e.key === 'Enter') fazerLogin(); });
-  
-  // Listener do Modo Viagem para validar ao digitar
   var destField = document.getElementById('viagemDestino');
   if (destField) destField.addEventListener('input', checkSubmit);
 });
 
-// ══════════════════════════════════════════════════════════════
-//  APP INIT
-// ══════════════════════════════════════════════════════════════
 function iniciarApp() {
   document.getElementById('ldScreen').classList.remove('hidden');
   document.getElementById('mainApp').style.display = 'block';
@@ -159,16 +125,12 @@ function iniciarApp() {
   }
 
   loadSequence([
-    { t: 'Autenticando...', p: 20 },
-    { t: 'Iniciando câmera...', p: 50 },
-    { t: 'Buscando GPS...', p: 80 },
-    { t: 'Pronto!', p: 100 }
+    { t: 'Autenticando...', p: 20 }, { t: 'Iniciando câmera...', p: 50 },
+    { t: 'Buscando GPS...', p: 80 }, { t: 'Pronto!', p: 100 }
   ], function () {
     document.getElementById('ldScreen').classList.add('hidden');
     initCamera(); initGeo(); syncDados();
-    refreshInterval = setInterval(function () {
-      syncDados(); if (isGestor) syncGestor();
-    }, 300000);
+    refreshInterval = setInterval(function () { syncDados(); if (isGestor) syncGestor(); }, 300000);
     if (isGestor) syncGestor();
   });
 }
@@ -184,11 +146,8 @@ function loadSequence(steps, cb) {
   next();
 }
 
-// ══════════════════════════════════════════════════════════════
-//  CÂMERA (Compressão Nível Sênior para envio rápido)
-// ══════════════════════════════════════════════════════════════
 function initCamera() {
-  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 320, height: 320 } })
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 240, height: 240 } })
     .then(function (s) { stream = s; document.getElementById('videoEl').srcObject = s; })
     .catch(function () { toast('Câmera indisponível'); });
 }
@@ -197,12 +156,10 @@ function capturePhoto() {
   var v = document.getElementById('videoEl');
   var c = document.getElementById('canvasEl');
   
-  // Imagem redimensionada para 320x320 para economizar megabytes
-  c.width = 320; c.height = 320;
-  c.getContext('2d').drawImage(v, 0, 0, 320, 320);
-  
-  // Compressão em 0.5 (Qualidade ótima pro Drive, envio instantâneo)
-  selfieData = c.toDataURL('image/jpeg', 0.5);
+  // Compressão Máxima (Envio Rápido)
+  c.width = 240; c.height = 240;
+  c.getContext('2d').drawImage(v, 0, 0, 240, 240);
+  selfieData = c.toDataURL('image/jpeg', 0.4);
   
   v.style.display = 'none'; c.style.display = 'block';
   document.getElementById('btnCapture').style.display = 'none';
@@ -220,27 +177,18 @@ function resetCamera() {
   selfieData = ''; checkSubmit();
 }
 
-function stopCamera() {
-  if (stream) { stream.getTracks().forEach(function (t) { t.stop(); }); stream = null; }
-}
+function stopCamera() { if (stream) { stream.getTracks().forEach(function (t) { t.stop(); }); stream = null; } }
 
-// ══════════════════════════════════════════════════════════════
-//  GEOLOCALIZAÇÃO E MODO VIAGEM
-// ══════════════════════════════════════════════════════════════
 function initGeo() {
   if (!navigator.geolocation) { updateGeoUI('GPS indisponível', 'buscando', ''); return; }
-
   navigator.geolocation.watchPosition(
     function (pos) {
-      geoAtual.lat = pos.coords.latitude;
-      geoAtual.lng = pos.coords.longitude;
+      geoAtual.lat = pos.coords.latitude; geoAtual.lng = pos.coords.longitude;
       geoAtual.dist = haversine(geoAtual.lat, geoAtual.lng, LAT_EMPRESA, LNG_EMPRESA);
       geoAtual.dentro = geoAtual.dist <= RAIO_LIMITE;
-
       var status = geoAtual.dentro ? 'Dentro do raio permitido' : 'Fora do raio';
       var cls = geoAtual.dentro ? 'ok' : 'fora';
       var dist = 'Distância: ' + Math.round(geoAtual.dist) + 'm (limite: ' + RAIO_LIMITE + 'm)';
-
       updateGeoUI(status, cls, dist); checkSubmit();
     },
     function () { updateGeoUI('GPS negado', 'fora', ''); },
@@ -255,25 +203,21 @@ function updateGeoUI(txt, cls, dist) {
 }
 
 function haversine(lat1, lon1, lat2, lon2) {
-  var R = 6371000;
-  var dLat = (lat2 - lat1) * Math.PI / 180; var dLon = (lon2 - lon1) * Math.PI / 180;
+  var R = 6371000; var dLat = (lat2 - lat1) * Math.PI / 180; var dLon = (lon2 - lon1) * Math.PI / 180;
   var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-// ARQUITETURA "EM VIAGEM" — Lógica de Toggle
 function toggleViagem() {
   var check = document.getElementById('viagemCheck').checked;
   var container = document.getElementById('viagemDestinoContainer');
-  
   if(check) {
     container.classList.remove('hidden');
-    document.getElementById('geoIndicator').className = 'geo-indicator ok'; // Muda GPS pra OK visualmente
+    document.getElementById('geoIndicator').className = 'geo-indicator ok'; 
     document.getElementById('geoValue').textContent = 'Modo Viagem Ativo';
   } else {
     container.classList.add('hidden');
-    document.getElementById('viagemDestino').value = ''; // Limpa o campo
-    // Restaura GPS visual
+    document.getElementById('viagemDestino').value = ''; 
     var cls = geoAtual.dentro ? 'ok' : 'fora';
     var txt = geoAtual.dentro ? 'Dentro do raio permitido' : 'Fora do raio';
     updateGeoUI(txt, cls, 'Distância: ' + Math.round(geoAtual.dist) + 'm');
@@ -286,27 +230,17 @@ function selectType(el, tipo) {
   el.classList.add('selected'); tipoSelecionado = tipo; checkSubmit();
 }
 
-// VALIDADOR INTELIGENTE: Pesa Gestor, Viagem ou GPS Normal
 function checkSubmit() {
   var isGestor = sessao && sessao.nivel === 'gestor';
   var isViagem = document.getElementById('viagemCheck') && document.getElementById('viagemCheck').checked;
   var destinoText = document.getElementById('viagemDestino') ? document.getElementById('viagemDestino').value.trim() : '';
-  
   var geoOk = false;
-  if(isGestor) {
-    geoOk = true; // Gestor sempre pode
-  } else if(isViagem) {
-    geoOk = destinoText.length > 2; // Viagem precisa de no mínimo 3 letras no destino
-  } else {
-    geoOk = geoAtual.dentro; // Operação normal trava no raio
-  }
-
+  if(isGestor) geoOk = true; 
+  else if(isViagem) geoOk = destinoText.length > 2; 
+  else geoOk = geoAtual.dentro; 
   document.getElementById('submitBtn').disabled = !(selfieData && tipoSelecionado && geoOk);
 }
 
-// ══════════════════════════════════════════════════════════════
-//  REGISTRAR PONTO (Enviando dados da Viagem)
-// ══════════════════════════════════════════════════════════════
 function registrarPonto() {
   var btn = document.getElementById('submitBtn');
   btn.disabled = true; btn.textContent = 'Enviando...';
@@ -315,28 +249,18 @@ function registrarPonto() {
   var destinoText = document.getElementById('viagemDestino').value.trim();
 
   var payload = {
-    nome: sessao.nome,
-    tipo: tipoSelecionado,
-    selfie: selfieData,
-    lat: geoAtual.lat,
-    lng: geoAtual.lng,
-    dispositivo: navigator.userAgent.substring(0, 60),
-    ip: '',
-    viagem: isViagem, // Backend espera isso
-    destino: destinoText // E isso
+    nome: sessao.nome, tipo: tipoSelecionado, selfie: selfieData, lat: geoAtual.lat, lng: geoAtual.lng,
+    dispositivo: navigator.userAgent.substring(0, 60), ip: '', viagem: isViagem, destino: destinoText
   };
 
   fetch(API_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify(payload),
-    redirect: 'follow'
+    method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload), redirect: 'follow'
   })
     .then(function (r) { return r.json(); })
     .then(function (d) {
-      if (d.status === 'ok') {
-        showSuccess(d); incrementSession(); resetAfterSubmit(); syncDados();
-      } else { toast(d.msg || 'Erro ao registrar'); }
+      if (d.status === 'ok') { showSuccess(d); incrementSession(); resetAfterSubmit(); syncDados(); } 
+      else { toast(d.msg || 'Erro ao registrar'); }
     })
     .catch(function () { toast('Sem conexão — tente novamente'); })
     .finally(function () { btn.disabled = false; btn.textContent = 'Confirmar Registro'; });
@@ -353,10 +277,7 @@ function showSuccess(d) {
 function resetAfterSubmit() {
   resetCamera(); tipoSelecionado = '';
   document.querySelectorAll('.type-btn').forEach(function (b) { b.classList.remove('selected'); });
-  if(document.getElementById('viagemCheck').checked) {
-    document.getElementById('viagemCheck').checked = false;
-    toggleViagem();
-  }
+  if(document.getElementById('viagemCheck').checked) { document.getElementById('viagemCheck').checked = false; toggleViagem(); }
   checkSubmit();
 }
 
@@ -365,9 +286,6 @@ function incrementSession() {
   var c = parseInt(localStorage.getItem(key) || '0'); localStorage.setItem(key, c + 1);
 }
 
-// ══════════════════════════════════════════════════════════════
-//  SYNC E PAINÉIS 
-// ══════════════════════════════════════════════════════════════
 function syncDados() {
   fetch(API_URL + '?sync=1')
     .then(function (r) { return r.json(); })
@@ -375,8 +293,7 @@ function syncDados() {
       document.getElementById('statHoje').textContent = d.hoje || 0;
       document.getElementById('statMes').textContent = d.mes || 0;
       setBadge(true); if (d.timeline) renderTimeline(d.timeline);
-    })
-    .catch(function () { setBadge(false); });
+    }).catch(function () { setBadge(false); });
 }
 
 function syncGestor() {
@@ -386,20 +303,30 @@ function syncGestor() {
       if (d.erro) return;
       document.getElementById('statPresentes').textContent = d.presentes || 0;
       document.getElementById('statAlertas').textContent = (d.alertas ? d.alertas.length : 0);
-    })
-    .catch(function () { /* silencioso */ });
+
+      // ALERTA PROATIVO DE VIAGEM PARA O GESTOR
+      if (!avisoViagemFeito) {
+        var emViagem = [];
+        var nomes = Object.keys(d.colaboradores);
+        nomes.forEach(function(n) {
+          if (d.colaboradores[n].registros.some(r => r.statusGeo.indexOf('VIAGEM') > -1)) {
+            emViagem.push(n);
+          }
+        });
+        if (emViagem.length > 0) { toast("📍 Atenção: " + emViagem.join(", ") + " em viagem hoje."); }
+        avisoViagemFeito = true; 
+      }
+    }).catch(function () { });
 }
 
 function setBadge(on) {
-  var b = document.getElementById('badgeStatus');
-  b.textContent = on ? 'Online' : 'Offline';
+  var b = document.getElementById('badgeStatus'); b.textContent = on ? 'Online' : 'Offline';
   b.className = 'badge ' + (on ? 'badge-online' : 'badge-offline');
 }
 
 function renderTimeline(items) {
   var el = document.getElementById('timelineList');
   if (!items || items.length === 0) { el.innerHTML = '<p style="color:var(--text-tertiary);font-size:.82rem;text-align:center;">Nenhum registro hoje</p>'; return; }
-
   var html = '';
   items.forEach(function (it) {
     var cls = 'tl-' + it.tipo.replace(/\s/g, '_');
@@ -408,22 +335,12 @@ function renderTimeline(items) {
   el.innerHTML = html;
 }
 
-// MANTENHO OS CÓDIGOS ORIGINAIS DO PAINEL E RELATÓRIO AQUI PARA O POST NÃO FICAR GIGANTE
-// (Pode colar exatamente o mesmo bloco 'abrirPainel', 'renderPainel', 'abrirRelatorio', etc. do seu app.js antigo abaixo desta linha)
-
-function abrirPainel() {
-  document.getElementById('painelModal').classList.add('show');
-  carregarPainel();
-}
-
-function fecharPainel() {
-  document.getElementById('painelModal').classList.remove('show');
-}
+function abrirPainel() { document.getElementById('painelModal').classList.add('show'); carregarPainel(); }
+function fecharPainel() { document.getElementById('painelModal').classList.remove('show'); }
 
 function carregarPainel() {
   var body = document.getElementById('painelBody');
   body.innerHTML = '<div style="text-align:center;padding:60px 20px;"><div class="ld-spinner" style="margin:0 auto;"></div><p style="color:var(--text-tertiary);margin-top:16px;font-size:.85rem;">Sincronizando painel...</p></div>';
-
   fetch(API_URL + '?painel=1&senha=' + encodeURIComponent(sessao.senha))
     .then(function (r) { return r.json(); })
     .then(function (d) { if (d.erro) { body.innerHTML = '<p style="color:var(--red);padding:20px;">' + d.erro + '</p>'; return; } renderPainel(d); })
@@ -431,7 +348,6 @@ function carregarPainel() {
 }
 
 function renderPainel(d) {
-  // Mesmo código que você já tinha...
   var h = '<div class="painel-stats"><div class="p-stat"><div class="p-val green">' + d.presentes + '</div><div class="p-lbl">Presentes</div></div>';
   h += '<div class="p-stat"><div class="p-val red">' + d.ausentes + '</div><div class="p-lbl">Ausentes</div></div>';
   h += '<div class="p-stat"><div class="p-val cyan">' + d.totalFuncionarios + '</div><div class="p-lbl">Total</div></div></div>';
