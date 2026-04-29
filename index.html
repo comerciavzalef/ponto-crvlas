@@ -211,6 +211,12 @@
 <div class="toast" id="toast"></div>
 
 <!-- JavaScript -->
+  <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(function () {});
+  }
+</script>
+
 <script src="app.js"></script>
 </body>
 </html>
