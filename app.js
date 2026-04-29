@@ -1,6 +1,7 @@
 // ══════════════════════════════════════════════════════════════
-//  PONTO DIGITAL — app.js v7.0 (Arquitetura Sênior Completa)
+//  PONTO DIGITAL — app.js v7.1 (Arquitetura Sênior Completa)
 //  Grupo Carlos Vaz — CRV/LAS
+//  + Ocultação Dinâmica de Área Operacional para Gestores
 // ══════════════════════════════════════════════════════════════
 
 var API_URL = 'https://script.google.com/macros/s/AKfycbzw_DCKo-0c3EMxWHgajCs8FxVYxtghYXSerldjBaTSu5lKsKqUYr5-vOLTYOuYsUFRUg/exec';
@@ -103,6 +104,9 @@ function logout() {
   avisoViagemFeito = false; // Reseta o aviso para o próximo login
   if(document.getElementById('viagemCheck')) document.getElementById('viagemCheck').checked = false;
   toggleViagem();
+
+  // MENTORIA: Restaura a área operacional caso um funcionário vá usar o app após o gestor sair
+  if(document.getElementById('areaOperacional')) document.getElementById('areaOperacional').style.display = 'block';
 }
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -122,6 +126,9 @@ function iniciarApp() {
   if (isGestor) {
     document.getElementById('badgeGestor').style.display = '';
     document.getElementById('gestorSection').classList.add('show');
+    
+    // MENTORIA: Esconde toda a cápsula operacional (câmera, gps, botões) do painel do Gestor
+    if(document.getElementById('areaOperacional')) document.getElementById('areaOperacional').style.display = 'none';
   }
 
   loadSequence([
@@ -129,7 +136,14 @@ function iniciarApp() {
     { t: 'Buscando GPS...', p: 80 }, { t: 'Pronto!', p: 100 }
   ], function () {
     document.getElementById('ldScreen').classList.add('hidden');
-    initCamera(); initGeo(); syncDados();
+    
+    // Se for gestor, nem precisa inicializar a câmera ou o GPS, economizando bateria!
+    if (!isGestor) {
+      initCamera(); 
+      initGeo(); 
+    }
+    
+    syncDados();
     refreshInterval = setInterval(function () { syncDados(); if (isGestor) syncGestor(); }, 300000);
     if (isGestor) syncGestor();
   });
