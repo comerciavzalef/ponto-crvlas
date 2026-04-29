@@ -6,28 +6,26 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#050d18">
+<meta name="theme-color" content="#000000">
 <link rel="manifest" href="manifest.json">
 <title>Ponto Digital — CRV/LAS</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%230a1628'/%3E%3Ctext x='50' y='50' text-anchor='middle' fill='%2306b6d4' font-family='Arial' font-weight='900' font-size='28' dy='.35em'%3E⏱%3C/text%3E%3C/svg%3E">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23000'/%3E%3Ctext x='50' y='55' text-anchor='middle' fill='%230a84ff' font-family='Arial' font-weight='900' font-size='40'%3E⏱%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<!-- BG Scene -->
 <div class="bg-scene">
   <div class="orb"></div>
   <div class="orb"></div>
   <div class="orb"></div>
 </div>
 
-<!-- ══════════════ LOGIN ══════════════ -->
 <div id="loginScreen">
   <div class="login-card">
     <div class="brand-icon">⏱</div>
     <h2>Ponto Digital</h2>
-    <p class="sub">CRV/LAS — Controle de Ponto</p>
+    <p class="sub">Logística Segura — CRV/LAS</p>
 
     <select id="loginUser" class="login-field">
       <option value="">Selecione seu nome</option>
@@ -39,12 +37,10 @@
     </select>
 
     <div style="position:relative; margin-bottom:14px;">
-      <input type="password" id="loginPass" class="login-field" placeholder="Sua senha" autocomplete="off" style="padding-right:48px; margin-bottom:0;">
-      <button type="button" onclick="toggleSenha()" style="
-        position:absolute; right:12px; top:50%; transform:translateY(-50%);
-        background:none; border:none; cursor:pointer; font-size:1.1rem;
-        color:var(--text-dim); padding:4px;
-      " id="eyeBtn"><span id="eyeIcon">👁️</span></button>
+      <input type="password" id="loginPass" class="login-field" placeholder="Sua senha" autocomplete="off" style="padding-right:48px;">
+      <button type="button" onclick="toggleSenha()" id="eyeBtn" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; font-size:1.1rem; color:rgba(235,235,245,.3);">
+        <span id="eyeIcon">👁️</span>
+      </button>
     </div>
 
     <button class="login-btn" id="loginBtn" onclick="fazerLogin()">Entrar</button>
@@ -52,24 +48,21 @@
   </div>
 </div>
   
-<!-- ══════════════ LOADING ══════════════ -->
 <div id="ldScreen" class="hidden">
   <div class="ld-spinner"></div>
-  <div class="ld-text" id="ldText">Conectando...</div>
+  <div class="ld-text" id="ldText">Sincronizando...</div>
 </div>
 <div id="ldBarTop"></div>
 
-<!-- ══════════════ MAIN APP ══════════════ -->
 <div id="mainApp" style="display:none;">
 
-  <!-- Top Bar -->
   <div class="top-bar">
     <div class="top-bar-row1">
       <div class="brand">
         <div class="brand-dot">⏱</div>
         <div class="brand-text">
           <h1>Ponto Digital</h1>
-          <span>CRV/LAS</span>
+          <span>Painel Operacional</span>
         </div>
       </div>
       <button class="btn-logout" onclick="logout()">Sair</button>
@@ -83,8 +76,33 @@
 
   <div class="container">
 
-    <!-- Stats -->
-    <div class="section-label">Resumo</div>
+    <div class="gestor-section" id="gestorSection">
+      <div class="section-label">Monitoramento em Tempo Real</div>
+      <div class="stats-grid">
+        <div class="stat-card purple" onclick="abrirPainel()">
+          <span class="s-icon">👥</span>
+          <div class="s-label">Presentes</div>
+          <div class="s-value purple" id="statPresentes">0</div>
+        </div>
+        <div class="stat-card red" onclick="abrirPainel()">
+          <span class="s-icon">⚠️</span>
+          <div class="s-label">Alertas</div>
+          <div class="s-value red" id="statAlertas">0</div>
+        </div>
+      </div>
+      
+      <div class="gestor-btns">
+        <button class="gestor-btn" onclick="abrirRelatorio()">
+          <div class="g-icon">📊</div>
+          <div class="g-text">
+            <span>Relatório Consolidado</span>
+            <span>Histórico de horas e faltas</span>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <div class="section-label">Meu Desempenho (Mês)</div>
     <div class="stats-grid">
       <div class="stat-card cyan">
         <span class="s-icon">📋</span>
@@ -92,80 +110,65 @@
         <div class="s-value cyan" id="statHoje">0</div>
       </div>
       <div class="stat-card green">
-        <span class="s-icon">📊</span>
-        <div class="s-label">Este Mês</div>
+        <span class="s-icon">📈</span>
+        <div class="s-label">Total do Mês</div>
         <div class="s-value green" id="statMes">0</div>
       </div>
-      <div class="stat-card purple" id="cardPresentes" style="display:none;">
-        <span class="s-icon">👥</span>
-        <div class="s-label">Presentes</div>
-        <div class="s-value purple" id="statPresentes">0</div>
-      </div>
-      <div class="stat-card red" id="cardAlertas" style="display:none;">
-        <span class="s-icon">⚠️</span>
-        <div class="s-label">Alertas</div>
-        <div class="s-value red" id="statAlertas">0</div>
-      </div>
     </div>
 
-    <!-- Gestor Buttons -->
-    <div class="gestor-section" id="gestorSection">
-      <div class="section-label">Área do Gestor</div>
-      <div class="gestor-btns">
-        <button class="gestor-btn" onclick="abrirPainel()">
-          <div class="g-icon">📡</div>
-          <div class="g-text">
-            <span>Painel Tempo Real</span>
-            <span>Veja quem está presente agora</span>
-          </div>
-        </button>
-        <button class="gestor-btn" onclick="abrirRelatorio()">
-          <div class="g-icon">📊</div>
-          <div class="g-text">
-            <span>Relatório de Horas</span>
-            <span>Resumo mensal dos colaboradores</span>
-          </div>
-        </button>
-      </div>
-    </div>
-
-    <!-- Geo -->
-    <div class="section-label">Localização</div>
+    <div class="section-label">Validação de Local</div>
     <div class="geo-card">
       <div class="geo-indicator buscando" id="geoIndicator">📍</div>
       <div class="geo-info">
-        <div class="geo-label">Status GPS</div>
-        <div class="geo-value" id="geoValue">Buscando localização...</div>
+        <div class="geo-label">Geolocalização</div>
+        <div class="geo-value" id="geoValue">Localizando dispositivo...</div>
         <div class="geo-dist" id="geoDist"></div>
       </div>
     </div>
 
-    <!-- Camera -->
+    <div class="travel-mode-card" id="travelCard">
+      <div class="travel-header">
+        <div class="travel-title">
+          <span class="t-icon">🚗</span>
+          <div class="t-text">
+            <span>Modo Viagem</span>
+            <span>Ative se estiver fora da rota padrão</span>
+          </div>
+        </div>
+        <label class="ios-switch">
+          <input type="checkbox" id="viagemCheck" onchange="toggleViagem()">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div id="viagemDestinoContainer" class="viagem-input-wrap hidden">
+        <input type="text" id="viagemDestino" placeholder="Cidade ou Cliente (ex: Floresta Azul)" class="viagem-field">
+      </div>
+    </div>
+
+    <div class="section-label">Identificação Visual</div>
     <div class="camera-card">
-      <div class="cam-title">Selfie de Verificação</div>
       <div class="video-wrap">
         <video id="videoEl" autoplay playsinline></video>
         <canvas id="canvasEl"></canvas>
       </div>
       <div class="cam-actions">
-        <button class="cam-btn primary" id="btnCapture" onclick="capturePhoto()">📸 Capturar</button>
-        <button class="cam-btn" id="btnReset" onclick="resetCamera()" style="display:none;">🔄 Nova Foto</button>
+        <button class="cam-btn primary" id="btnCapture" onclick="capturePhoto()">📸 Capturar Foto</button>
+        <button class="cam-btn" id="btnReset" onclick="resetCamera()" style="display:none;">🔄 Refazer</button>
       </div>
-      <div class="selfie-ok" id="selfieOk">✅ Selfie capturada com sucesso</div>
+      <div class="selfie-ok" id="selfieOk">✅ Identidade Confirmada</div>
     </div>
 
-    <!-- Type -->
+    <div class="section-label">Ponto Digital</div>
     <div class="type-card">
-      <div class="type-title">Tipo de Registro</div>
       <div class="type-grid">
         <button class="type-btn" onclick="selectType(this,'ENTRADA')">
           <span class="type-icon">🟢</span>Entrada
         </button>
         <button class="type-btn" onclick="selectType(this,'SAÍDA ALMOÇO')">
-          <span class="type-icon">🍽️</span>Saída Almoço
+          <span class="type-icon">🍽️</span>S. Almoço
         </button>
         <button class="type-btn" onclick="selectType(this,'RETORNO ALMOÇO')">
-          <span class="type-icon">🔄</span>Retorno Almoço
+          <span class="type-icon">🔄</span>R. Almoço
         </button>
         <button class="type-btn" onclick="selectType(this,'SAÍDA')">
           <span class="type-icon">🔴</span>Saída
@@ -173,54 +176,38 @@
       </div>
     </div>
 
-    <!-- Submit -->
-    <button class="submit-btn" id="submitBtn" onclick="registrarPonto()" disabled>Registrar Ponto</button>
+    <button class="submit-btn" id="submitBtn" onclick="registrarPonto()" disabled>Confirmar Registro</button>
 
-    <!-- Timeline -->
     <div class="timeline-card">
-      <div class="tl-title">Registros de Hoje</div>
+      <div class="tl-title">Últimas Atividades</div>
       <div id="timelineList">
-        <p style="color:var(--text-dim);font-size:.82rem;">Carregando...</p>
+        <p style="color:rgba(235,235,245,.3); font-size:.85rem; text-align:center; padding:10px;">Carregando...</p>
       </div>
     </div>
 
-  </div><!-- /container -->
-</div><!-- /mainApp -->
-
-<!-- ══════════════ PAINEL TEMPO REAL ══════════════ -->
-<div class="modal-full" id="painelModal">
+  </div></div><div class="modal-full" id="painelModal">
   <div class="modal-bar">
-    <h2>📡 Painel Tempo Real</h2>
-    <button class="modal-close" onclick="fecharPainel()">✕ Fechar</button>
+    <h2>📡 Monitoramento Ativo</h2>
+    <button class="modal-close" onclick="fecharPainel()">✕</button>
   </div>
   <div class="modal-body" id="painelBody"></div>
 </div>
 
-<!-- ══════════════ RELATÓRIO ══════════════ -->
 <div class="modal-full" id="relModal">
   <div class="modal-bar">
-    <h2>📊 Relatório de Horas</h2>
-    <button class="modal-close" onclick="fecharRelatorio()">✕ Fechar</button>
+    <h2>📊 Histórico Mensal</h2>
+    <button class="modal-close" onclick="fecharRelatorio()">✕</button>
   </div>
   <div class="modal-body" id="relBody"></div>
 </div>
 
-<!-- Success Overlay -->
 <div class="success-overlay" id="successOverlay">
   <div class="success-icon" id="successIcon">✅</div>
-  <div class="success-msg" id="successMsg">Ponto registrado!</div>
+  <div class="success-msg" id="successMsg">Ponto Registrado!</div>
   <div class="success-detail" id="successDetail"></div>
 </div>
 
-<!-- Toast -->
 <div class="toast" id="toast"></div>
-
-<!-- JavaScript -->
-  <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').catch(function () {});
-  }
-</script>
 
 <script src="app.js"></script>
 </body>
