@@ -12,10 +12,10 @@ var LAT_EMPRESA = -14.842472;
 var LNG_EMPRESA = -39.987250;
 
 var CREDS_OFFLINE = {
-  'LUCAS':  'Lucas@CRV2026',
-  'TASSIO': 'Tassio@CRV2026',
-  'AMARAL': 'Amaral@CRV2026',
-  'ALEX':   'Alex@CRV2026',
+  'LUCAS':  'lucas2026',
+  'TASSIO': 'tassio2026',
+  'AMARAL': 'amaral2026',
+  'ALEX':   'alex2026',
   'ALEF':   'GP.Carlos2026'
 };
 
