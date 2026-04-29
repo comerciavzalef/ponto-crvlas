@@ -569,9 +569,12 @@ function selectType(el,tipo){
 }
 
 function checkSubmit(){
-  var ok=selfieData&&tipoSelecionado&&geoAtual.dentro;
-  document.getElementById('submitBtn').disabled=!ok;
+  var isGestor = sessao && sessao.nivel === 'gestor';
+  var geoOk = isGestor ? true : geoAtual.dentro;
+  var ok = selfieData && tipoSelecionado && geoOk;
+  document.getElementById('submitBtn').disabled = !ok;
 }
+
 
 // ── Registrar Ponto ──────────────────────
 function registrarPonto(){
