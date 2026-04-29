@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Grupo Carlos Vaz — Ponto Digital</title>
-<!-- PWA -->
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -45,6 +44,33 @@ body{font-family:var(--font);background:var(--navy-deep);color:var(--text-primar
 @keyframes orbDrift3{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(calc(-50% + 50px),calc(-50% - 40px)) scale(1.2)}}
 @keyframes gridScroll{0%{transform:translate(0,0)}100%{transform:translate(60px,60px)}}
 
+/* ═══ LOGIN SCREEN ═══ */
+.login-screen{position:fixed;inset:0;z-index:9800;background:var(--navy-deep);display:flex;align-items:center;justify-content:center;padding:24px;transition:opacity .5s,visibility .5s}
+.login-screen.hide{opacity:0;visibility:hidden;pointer-events:none}
+.login-card{width:100%;max-width:380px;padding:40px 28px 36px;border-radius:var(--radius-xl);background:var(--glass-strong);border:1px solid var(--glass-border);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);position:relative;overflow:hidden}
+.login-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent-blue),var(--accent-cyan),var(--accent-teal))}
+.login-logo{width:72px;height:72px;border-radius:18px;background:linear-gradient(135deg,var(--accent-blue),var(--accent-cyan));display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 20px;box-shadow:0 8px 30px rgba(37,99,235,.3);position:relative;overflow:hidden}
+.login-logo::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.12),transparent 50%);pointer-events:none}
+.login-logo span{color:#fff;font-weight:900;line-height:1.1;position:relative;z-index:1}
+.login-title{text-align:center;font-size:1.2rem;font-weight:800;margin-bottom:4px}
+.login-sub{text-align:center;font-size:.7rem;color:var(--text-muted);margin-bottom:28px;letter-spacing:.3px}
+.login-field{margin-bottom:14px}
+.login-field label{display:block;font-size:.62rem;color:var(--text-secondary);font-weight:700;margin-bottom:6px;letter-spacing:.5px;text-transform:uppercase}
+.login-field input,.login-field select{width:100%;padding:14px 16px;border-radius:var(--radius-sm);background:var(--navy);border:1px solid var(--glass-border);color:var(--text-primary);font-family:var(--font);font-size:.88rem;font-weight:600;transition:all .3s;-webkit-appearance:none}
+.login-field input:focus,.login-field select:focus{outline:none;border-color:var(--accent-cyan);box-shadow:0 0 0 3px rgba(6,182,212,.1)}
+.login-field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2364748b' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;cursor:pointer}
+.login-field input.error{border-color:var(--accent-red);box-shadow:0 0 0 3px rgba(239,68,68,.1);animation:loginShake .4s ease}
+@keyframes loginShake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+.login-error{font-size:.68rem;color:var(--accent-red);font-weight:600;min-height:20px;margin-bottom:8px;text-align:center}
+.login-btn{width:100%;padding:16px;border-radius:var(--radius);border:none;color:#fff;font-family:var(--font);font-size:.9rem;font-weight:800;cursor:pointer;text-transform:uppercase;letter-spacing:1.5px;background:linear-gradient(135deg,var(--accent-blue),var(--accent-cyan),var(--accent-teal));background-size:200% 200%;animation:gradShift 4s ease infinite;box-shadow:0 6px 30px rgba(37,99,235,.25);position:relative;overflow:hidden;transition:all .2s}
+.login-btn:active{transform:scale(.97)}
+.login-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.login-btn .shimmer{position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);animation:shimmer 3s ease-in-out infinite}
+@keyframes gradShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes shimmer{0%{left:-100%}50%,100%{left:100%}}
+.login-footer{text-align:center;margin-top:20px;font-size:.58rem;color:var(--text-dim);letter-spacing:.3px}
+
+/* ═══ LOADING SCREEN ═══ */
 .ld-screen{position:fixed;inset:0;z-index:10000;background:var(--navy-deep);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .6s cubic-bezier(.4,0,.2,1),visibility .6s}
 .ld-screen.exit{opacity:0;visibility:hidden;pointer-events:none}
 .ld-logo{position:relative;width:100px;height:100px;margin-bottom:32px}
@@ -81,6 +107,9 @@ body{font-family:var(--font);background:var(--navy-deep);color:var(--text-primar
 .top-right{display:flex;align-items:center;gap:8px}
 .badge{padding:5px 10px;border-radius:20px;font-size:.55rem;font-weight:700;letter-spacing:.6px;text-transform:uppercase;backdrop-filter:blur(10px)}
 .badge-online{background:rgba(16,185,129,.1);color:var(--accent-green);border:1px solid rgba(16,185,129,.2)}
+.badge-gestor{background:rgba(139,92,246,.1);color:var(--accent-purple);border:1px solid rgba(139,92,246,.2)}
+.btn-logout{padding:5px 10px;border-radius:20px;font-size:.55rem;font-weight:700;letter-spacing:.4px;background:rgba(239,68,68,.08);color:var(--accent-red);border:1px solid rgba(239,68,68,.15);cursor:pointer;transition:all .2s;font-family:var(--font)}
+.btn-logout:hover{background:rgba(239,68,68,.15)}
 
 .greeting{margin:20px 0 18px;padding:22px 20px;border-radius:var(--radius-lg);background:var(--glass);border:1px solid var(--glass-border);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);position:relative;overflow:hidden}
 .greeting::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(6,182,212,.2),transparent)}
@@ -92,7 +121,6 @@ body{font-family:var(--font);background:var(--navy-deep);color:var(--text-primar
 .clock-h{font-family:var(--mono);font-size:3.2rem;font-weight:800;letter-spacing:-2px;background:linear-gradient(135deg,#fff,var(--accent-cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1}
 .clock-s{font-family:var(--mono);font-size:1.1rem;color:var(--text-dim);font-weight:500}
 
-/* ═══ GEO STATUS ═══ */
 .geo-bar{margin:0 0 18px;padding:14px 16px;border-radius:var(--radius);display:flex;align-items:center;gap:10px;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);transition:all .4s;position:relative;overflow:hidden}
 .geo-bar::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent)}
 .geo-bar.loading{background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.15)}
@@ -141,12 +169,6 @@ body{font-family:var(--font);background:var(--navy-deep);color:var(--text-primar
 .section{margin-bottom:18px}
 .sec-label{font-size:.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.2px;font-weight:700;margin-bottom:10px;padding-left:2px}
 .sec-hint{font-size:.58rem;color:var(--text-dim);font-weight:500;margin-left:6px;text-transform:none;letter-spacing:0}
-
-.field{margin-bottom:12px}
-.field-label{display:block;font-size:.65rem;color:var(--text-secondary);font-weight:600;margin-bottom:6px;letter-spacing:.4px}
-.field-input{width:100%;padding:13px 15px;border-radius:var(--radius-sm);background:var(--navy-light);border:1px solid var(--glass-border);color:var(--text-primary);font-family:var(--font);font-size:.85rem;font-weight:500;transition:all .3s;-webkit-appearance:none;appearance:none}
-.field-input:focus{outline:none;border-color:var(--accent-cyan);box-shadow:0 0 0 3px rgba(6,182,212,.08)}
-select.field-input{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2364748b' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 15px center;padding-right:38px;cursor:pointer}
 
 .type-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .type-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px 10px;border-radius:var(--radius);background:var(--navy-light);border:2px solid var(--glass-border);cursor:pointer;transition:all .3s cubic-bezier(.4,0,.2,1);-webkit-user-select:none;user-select:none;position:relative;overflow:hidden;min-height:85px}
@@ -207,41 +229,17 @@ select.field-input{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:/
 
 .submit-wrap{position:relative;margin-bottom:18px}
 .submit-btn{width:100%;padding:18px;border-radius:var(--radius);border:none;color:#fff;font-family:var(--font);font-size:.95rem;font-weight:800;cursor:pointer;position:relative;overflow:hidden;transition:all .3s;text-transform:uppercase;letter-spacing:1.5px;background:linear-gradient(135deg,var(--accent-blue),var(--accent-cyan),var(--accent-teal));background-size:200% 200%;animation:gradShift 4s ease infinite;box-shadow:0 6px 30px rgba(37,99,235,.25)}
-@keyframes gradShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
 .submit-btn:active{transform:scale(.97)}
 .submit-btn:disabled{opacity:.4;cursor:not-allowed;transform:none;animation:none}
 .submit-btn .shimmer{position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);animation:shimmer 3s ease-in-out infinite}
-@keyframes shimmer{0%{left:-100%}50%,100%{left:100%}}
 .submit-glow{position:absolute;bottom:-8px;left:20%;right:20%;height:20px;background:linear-gradient(135deg,var(--accent-blue),var(--accent-cyan));filter:blur(20px);opacity:.3;border-radius:50%;pointer-events:none}
 
-/* ═══ BOTÃO RELATÓRIO ═══ */
-.rel-btn{width:100%;padding:16px;border-radius:var(--radius);border:1px solid rgba(139,92,246,.25);background:rgba(139,92,246,.08);color:var(--accent-purple);font-family:var(--font);font-size:.82rem;font-weight:700;cursor:pointer;transition:all .3s;text-align:center;backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;gap:8px}
+.rel-btn{width:100%;padding:16px;border-radius:var(--radius);border:1px solid rgba(139,92,246,.25);background:rgba(139,92,246,.08);color:var(--accent-purple);font-family:var(--font);font-size:.82rem;font-weight:700;cursor:pointer;transition:all .3s;text-align:center;backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;gap:8px}
+.rel-btn.gestor-show{display:flex}
 .rel-btn:hover{background:rgba(139,92,246,.15);border-color:rgba(139,92,246,.4)}
 .rel-btn:active{transform:scale(.97)}
 .rel-btn.loading{opacity:.6;pointer-events:none}
 
-/* ═══ MODAL SENHA ═══ */
-.pwd-modal{position:fixed;inset:0;z-index:9700;background:rgba(5,13,24,.92);display:none;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(20px)}
-.pwd-modal.show{display:flex}
-.pwd-box{background:var(--navy-light);border:1px solid rgba(139,92,246,.3);border-radius:var(--radius-lg);padding:32px 24px;max-width:340px;width:100%;text-align:center;position:relative;overflow:hidden}
-.pwd-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent-purple),var(--accent-cyan))}
-.pwd-icon{font-size:2.5rem;margin-bottom:12px}
-.pwd-title{font-size:1rem;font-weight:800;margin-bottom:4px;color:var(--text-primary)}
-.pwd-sub{font-size:.72rem;color:var(--text-muted);margin-bottom:20px;line-height:1.4}
-.pwd-input{width:100%;padding:14px 16px;border-radius:var(--radius-sm);background:var(--navy);border:1px solid var(--glass-border);color:var(--text-primary);font-family:var(--font);font-size:.9rem;font-weight:600;text-align:center;letter-spacing:2px;transition:all .3s;-webkit-appearance:none}
-.pwd-input:focus{outline:none;border-color:var(--accent-purple);box-shadow:0 0 0 3px rgba(139,92,246,.12)}
-.pwd-input.error{border-color:var(--accent-red);box-shadow:0 0 0 3px rgba(239,68,68,.12);animation:pwdShake .4s ease}
-@keyframes pwdShake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
-.pwd-error-msg{font-size:.68rem;color:var(--accent-red);margin-top:8px;min-height:18px;font-weight:600}
-.pwd-actions{display:flex;gap:10px;margin-top:20px}
-.pwd-btn{flex:1;padding:13px;border-radius:var(--radius-sm);border:none;font-family:var(--font);font-size:.82rem;font-weight:700;cursor:pointer;transition:all .2s}
-.pwd-btn.cancel{background:rgba(255,255,255,.06);color:var(--text-secondary);border:1px solid var(--glass-border)}
-.pwd-btn.cancel:hover{background:rgba(255,255,255,.1)}
-.pwd-btn.confirm{background:linear-gradient(135deg,var(--accent-purple),var(--accent-blue));color:#fff}
-.pwd-btn.confirm:active{transform:scale(.97)}
-.pwd-btn.confirm:disabled{opacity:.5;cursor:not-allowed}
-
-/* ═══ MODAL RELATÓRIO ═══ */
 .rel-modal{position:fixed;inset:0;z-index:9600;background:rgba(5,13,24,.92);display:none;flex-direction:column;padding:0;backdrop-filter:blur(20px);overflow:hidden}
 .rel-modal.show{display:flex}
 .rel-modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--glass-border);flex-shrink:0;background:rgba(5,13,24,.9);backdrop-filter:blur(20px)}
@@ -305,21 +303,53 @@ select.field-input{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:/
 
 <div class="bg-scene"><div class="orb orb-1"></div><div class="orb orb-2"></div><div class="orb orb-3"></div><div class="grid-overlay"></div><div class="noise"></div></div>
 
-<div class="ld-screen" id="ldScreen">
+<!-- ═══ LOGIN SCREEN ═══ -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">
+      <span style="font-size:.42rem;font-weight:600;color:rgba(255,255,255,.6);letter-spacing:.8px">GRUPO</span>
+      <span style="font-size:.6rem">CARLOS</span>
+      <span style="font-size:.6rem;margin-top:-2px">VAZ</span>
+    </div>
+    <div class="login-title">Ponto Digital</div>
+    <div class="login-sub">Faça login para registrar seu ponto</div>
+    <div class="login-field">
+      <label>Colaborador</label>
+      <select id="loginUser">
+        <option value="">— Selecione —</option>
+        <option value="LUCAS">LUCAS</option>
+        <option value="TASSIO">TASSIO</option>
+        <option value="AMARAL">AMARAL</option>
+        <option value="ALEX">ALEX</option>
+        <option value="ALEF">ALEF (Gestor)</option>
+      </select>
+    </div>
+    <div class="login-field">
+      <label>Senha</label>
+      <input type="password" id="loginPass" placeholder="Digite sua senha" autocomplete="off" onkeydown="if(event.key==='Enter')fazerLogin()">
+    </div>
+    <div class="login-error" id="loginError"></div>
+    <button class="login-btn" id="loginBtn" onclick="fazerLogin()"><span class="shimmer"></span>Entrar</button>
+    <div class="login-footer">Grupo Carlos Vaz — Sistema de Ponto v4.0</div>
+  </div>
+</div>
+
+<!-- ═══ LOADING SCREEN ═══ -->
+<div class="ld-screen" id="ldScreen" style="display:none">
   <div class="ld-logo"><div class="ld-ring"></div><div class="ld-ring"></div><div class="ld-ring"></div>
     <div class="ld-core"><span>GRUPO</span><span>CARLOS</span><span>VAZ</span></div>
   </div>
   <div class="ld-text"><h2>Ponto Digital</h2><p>Registro Inteligente de Ponto</p></div>
   <div class="ld-bar-wrap"><div class="ld-bar-fill" id="ldBarFill"></div></div>
   <div class="ld-steps">
-    <div class="ld-step" id="ldStep0">Inicializando sistema</div>
+    <div class="ld-step" id="ldStep0">Autenticando usuário</div>
     <div class="ld-step" id="ldStep1">Verificando conexão</div>
     <div class="ld-step" id="ldStep2">Carregando interface</div>
     <div class="ld-step" id="ldStep3">Pronto</div>
   </div>
 </div>
 
-<!-- ALERT MODAL (duplicado) -->
+<!-- ALERT MODAL -->
 <div class="alert-modal" id="alertModal">
   <div class="alert-box">
     <div class="alert-icon">⚠️</div>
@@ -328,21 +358,6 @@ select.field-input{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:/
     <div class="alert-actions">
       <button class="alert-btn cancel" onclick="fecharAlerta()">Cancelar</button>
       <button class="alert-btn confirm" onclick="confirmarRegistro()">Registrar Mesmo Assim</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL SENHA -->
-<div class="pwd-modal" id="pwdModal">
-  <div class="pwd-box">
-    <div class="pwd-icon">🔐</div>
-    <div class="pwd-title">Acesso Restrito</div>
-    <div class="pwd-sub">O relatório de horas é exclusivo para gestores. Digite a senha para continuar.</div>
-    <input class="pwd-input" type="password" id="pwdInput" placeholder="••••••••••" maxlength="30" autocomplete="off" onkeydown="if(event.key==='Enter')validarSenha()">
-    <div class="pwd-error-msg" id="pwdError"></div>
-    <div class="pwd-actions">
-      <button class="pwd-btn cancel" onclick="fecharSenha()">Cancelar</button>
-      <button class="pwd-btn confirm" id="pwdBtnOk" onclick="validarSenha()">Acessar</button>
     </div>
   </div>
 </div>
@@ -362,7 +377,6 @@ select.field-input{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:/
 </div>
 
 <div class="app" id="mainApp">
-
   <div class="top-bar">
     <div class="brand">
       <div class="brand-ic">
@@ -373,10 +387,14 @@ select.field-input{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:/
       </div>
       <div>
         <div class="brand-nm">Ponto <em>Digital</em></div>
-        <div class="brand-sb">Registro de Ponto</div>
+        <div class="brand-sb" id="brandUser">Registro de Ponto</div>
       </div>
     </div>
-    <div class="top-right"><span class="badge badge-online" id="badgeOnline">● Online</span></div>
+    <div class="top-right">
+      <span class="badge badge-online" id="badgeOnline">● Online</span>
+      <span class="badge badge-gestor" id="badgeGestor" style="display:none">★ Gestor</span>
+      <button class="btn-logout" onclick="fazerLogout()">Sair</button>
+    </div>
   </div>
 
   <div class="greeting">
@@ -387,7 +405,6 @@ select.field-input{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:/
     <div class="clock-wrap"><span class="clock-h" id="clockH">00:00</span><span class="clock-s" id="clockS">:00</span></div>
   </div>
 
-  <!-- GEO STATUS -->
   <div class="geo-bar loading" id="geoBar">
     <span class="geo-ic" id="geoIc">📡</span>
     <div class="geo-info">
@@ -413,27 +430,12 @@ select.field-input{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:/
   </div>
 
   <div class="section">
-    <div class="sec-label">Colaborador</div>
-    <div class="field"><label class="field-label" for="selColab">Selecione seu nome</label>
-      <select class="field-input" id="selColab"><option value="">— Escolha —</option><option>LUCAS</option><option>TASSIO</option><option>AMARAL</option><option>ALEX</option></select>
-    </div>
-  </div>
-
-  <div class="section">
     <div class="sec-label">Tipo de Registro <span class="sec-hint">— toque para selecionar</span></div>
     <div class="type-grid">
-      <div class="type-btn active" data-val="Entrada" onclick="selType(this)">
-        <div class="t-check"></div><div class="t-icon">🟢</div><div class="t-name">Entrada</div>
-      </div>
-      <div class="type-btn" data-val="Saída Almoço" onclick="selType(this)">
-        <div class="t-check"></div><div class="t-icon">🍽️</div><div class="t-name">Saída Almoço</div>
-      </div>
-      <div class="type-btn" data-val="Retorno Almoço" onclick="selType(this)">
-        <div class="t-check"></div><div class="t-icon">🔄</div><div class="t-name">Retorno Almoço</div>
-      </div>
-      <div class="type-btn" data-val="Saída Final" onclick="selType(this)">
-        <div class="t-check"></div><div class="t-icon">🔴</div><div class="t-name">Saída Final</div>
-      </div>
+      <div class="type-btn active" data-val="Entrada" onclick="selType(this)"><div class="t-check"></div><div class="t-icon">🟢</div><div class="t-name">Entrada</div></div>
+      <div class="type-btn" data-val="Saída Almoço" onclick="selType(this)"><div class="t-check"></div><div class="t-icon">🍽️</div><div class="t-name">Saída Almoço</div></div>
+      <div class="type-btn" data-val="Retorno Almoço" onclick="selType(this)"><div class="t-check"></div><div class="t-icon">🔄</div><div class="t-name">Retorno Almoço</div></div>
+      <div class="type-btn" data-val="Saída Final" onclick="selType(this)"><div class="t-check"></div><div class="t-icon">🔴</div><div class="t-name">Saída Final</div></div>
     </div>
   </div>
 
@@ -458,11 +460,7 @@ select.field-input{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:/
     <div class="submit-glow"></div>
   </div>
 
-  <!-- BOTÃO RELATÓRIO -->
-  <button class="rel-btn" id="btnRelatorio" onclick="abrirRelatorio()">
-    🔐 Relatório de Horas do Mês
-  </button>
-
+  <button class="rel-btn" id="btnRelatorio" onclick="abrirRelatorio()">📊 Relatório de Horas do Mês</button>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -480,9 +478,8 @@ var selfieBase64='',stream=null,tipoSelecionado='Entrada';
 var registrosHoje=0,registrosMes=0;
 var forcarRegistro=false;
 
-/* ═══ SENHA (camada 1 — front) ═══ */
-var SENHA_GESTOR='GP.Carlos2026';
-var senhaValidada='';
+/* ═══ SESSÃO ═══ */
+var sessao={nome:'',nivel:'',senha:''};
 
 /* ═══ GEO ═══ */
 var RAIO_LIMITE=50;
@@ -499,74 +496,138 @@ function haversine(lat1,lon1,lat2,lon2){
 
 function initGeo(){
   var bar=document.getElementById('geoBar'),title=document.getElementById('geoTitle'),sub=document.getElementById('geoSub'),dist=document.getElementById('geoDist'),ic=document.getElementById('geoIc');
-  if(!navigator.geolocation){
-    bar.className='geo-bar denied';ic.textContent='🚫';title.textContent='Geolocalização indisponível';sub.textContent='Seu dispositivo não suporta localização';dist.style.display='none';geoOk=false;checkSubmit();return;
-  }
+  if(!navigator.geolocation){bar.className='geo-bar denied';ic.textContent='🚫';title.textContent='Geolocalização indisponível';sub.textContent='Seu dispositivo não suporta localização';dist.style.display='none';geoOk=false;checkSubmit();return}
   navigator.geolocation.watchPosition(function(pos){
     userLat=pos.coords.latitude;userLng=pos.coords.longitude;
     userDist=haversine(userLat,userLng,LAT_EMPRESA,LNG_EMPRESA);
     dist.style.display='';dist.textContent=Math.round(userDist)+'m';
-    if(userDist<=RAIO_LIMITE){
-      bar.className='geo-bar ok';ic.textContent='✅';title.textContent='Dentro da área permitida';sub.textContent='Localização verificada com sucesso';geoOk=true;
-    }else{
-      bar.className='geo-bar far';ic.textContent='📍';title.textContent='Fora da área permitida';sub.textContent='Aproxime-se da empresa (máx '+RAIO_LIMITE+'m)';geoOk=false;
-    }
+    if(userDist<=RAIO_LIMITE){bar.className='geo-bar ok';ic.textContent='✅';title.textContent='Dentro da área permitida';sub.textContent='Localização verificada com sucesso';geoOk=true}
+    else{bar.className='geo-bar far';ic.textContent='📍';title.textContent='Fora da área permitida';sub.textContent='Aproxime-se da empresa (máx '+RAIO_LIMITE+'m)';geoOk=false}
     checkSubmit();
   },function(err){
-    if(err.code===1){bar.className='geo-bar denied';ic.textContent='🔒';title.textContent='Localização bloqueada';sub.textContent='Permita o acesso à localização nas configurações';}
-    else{bar.className='geo-bar denied';ic.textContent='⚠️';title.textContent='Erro de localização';sub.textContent='Não foi possível obter sua posição';}
+    if(err.code===1){bar.className='geo-bar denied';ic.textContent='🔒';title.textContent='Localização bloqueada';sub.textContent='Permita o acesso à localização nas configurações'}
+    else{bar.className='geo-bar denied';ic.textContent='⚠️';title.textContent='Erro de localização';sub.textContent='Não foi possível obter sua posição'}
     dist.style.display='none';geoOk=false;checkSubmit();
   },{enableHighAccuracy:true,maximumAge:10000,timeout:15000});
 }
 
-function checkSubmit(){
-  var btn=document.getElementById('btnSubmit');
-  if(geoOk){btn.disabled=false;}else{btn.disabled=true;}
+function checkSubmit(){document.getElementById('btnSubmit').disabled=!geoOk}
+
+/* ═══ LOGIN ═══ */
+function fazerLogin(){
+  var user=document.getElementById('loginUser').value;
+  var pass=document.getElementById('loginPass').value.trim();
+  var erro=document.getElementById('loginError');
+  var btn=document.getElementById('loginBtn');
+
+  if(!user){erro.textContent='Selecione seu nome';return}
+  if(!pass){erro.textContent='Digite sua senha';return}
+
+  erro.textContent='';
+  btn.disabled=true;
+  btn.innerHTML='<span class="shimmer"></span>Autenticando...';
+
+  fetch(API_URL,{
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify({acao:'login',usuario:user,senha:pass})
+  })
+  .then(function(r){return r.json()})
+  .then(function(data){
+    if(data.status==='ok'){
+      sessao.nome=data.nome;
+      sessao.nivel=data.nivel;
+      sessao.senha=pass;
+      localStorage.setItem('cv_ponto_sessao',JSON.stringify(sessao));
+      iniciarApp();
+    }else{
+      erro.textContent=data.msg||'Erro de autenticação';
+      document.getElementById('loginPass').value='';
+      document.getElementById('loginPass').classList.add('error');
+      setTimeout(function(){document.getElementById('loginPass').classList.remove('error')},600);
+      btn.disabled=false;
+      btn.innerHTML='<span class="shimmer"></span>Entrar';
+    }
+  })
+  .catch(function(){
+    // Offline — tenta login local como fallback
+    var usuarios={
+      'LUCAS':'Lucas@CRV2026','TASSIO':'Tassio@CRV2026',
+      'AMARAL':'Amaral@CRV2026','ALEX':'Alex@CRV2026',
+      'ALEF':'GP.Carlos2026'
+    };
+    var niveis={'LUCAS':'funcionario','TASSIO':'funcionario','AMARAL':'funcionario','ALEX':'funcionario','ALEF':'gestor'};
+    if(usuarios[user]===pass){
+      sessao.nome=user;sessao.nivel=niveis[user];sessao.senha=pass;
+      localStorage.setItem('cv_ponto_sessao',JSON.stringify(sessao));
+      iniciarApp();
+    }else{
+      erro.textContent='Sem conexão e senha incorreta';
+      btn.disabled=false;
+      btn.innerHTML='<span class="shimmer"></span>Entrar';
+    }
+  });
 }
 
-/* ═══ LOADING ═══ */
-(function(){
-  var steps=[{el:'ldStep0',pct:20,delay:300},{el:'ldStep1',pct:50,delay:700},{el:'ldStep2',pct:80,delay:400},{el:'ldStep3',pct:100,delay:400}];
-  var bar=document.getElementById('ldBarFill');var i=0,cumDelay=200;
+function fazerLogout(){
+  sessao={nome:'',nivel:'',senha:''};
+  localStorage.removeItem('cv_ponto_sessao');
+  location.reload();
+}
+
+function verificarSessao(){
+  var s=localStorage.getItem('cv_ponto_sessao');
+  if(s){
+    try{
+      sessao=JSON.parse(s);
+      if(sessao.nome&&sessao.senha){iniciarApp();return}
+    }catch(e){}
+  }
+  document.getElementById('loginScreen').classList.remove('hide');
+}
+
+function iniciarApp(){
+  document.getElementById('loginScreen').classList.add('hide');
+  document.getElementById('ldScreen').style.display='flex';
+
+  // Configurar UI baseado no nível
+  document.getElementById('brandUser').textContent=sessao.nome+(sessao.nivel==='gestor'?' — Gestor':'');
+  if(sessao.nivel==='gestor'){
+    document.getElementById('badgeGestor').style.display='';
+    document.getElementById('btnRelatorio').classList.add('gestor-show');
+  }
+
+  // Loading sequence
+  var steps=[{el:'ldStep0',pct:20,delay:300},{el:'ldStep1',pct:50,delay:500},{el:'ldStep2',pct:80,delay:400},{el:'ldStep3',pct:100,delay:400}];
+  var bar=document.getElementById('ldBarFill');var i=0;
   function runStep(){
     if(i>=steps.length){setTimeout(function(){document.getElementById('ldScreen').classList.add('exit');setTimeout(function(){document.getElementById('mainApp').classList.add('visible')},200)},500);return}
     var s=steps[i];setTimeout(function(){
       if(i>0){document.getElementById(steps[i-1].el).classList.remove('active');document.getElementById(steps[i-1].el).classList.add('done')}
       document.getElementById(s.el).classList.add('active');bar.style.width=s.pct+'%';i++;setTimeout(runStep,s.delay);
-    },cumDelay);cumDelay=0;
+    },i===0?200:0);
   }
   runStep();
-})();
+
+  initClock();initGreeting();checkDayReset();updateStats();loadTimeline();syncComPlanilha();initGeo();
+}
 
 function pad(v){return v<10?'0'+v:v}
 function initClock(){function t(){var n=new Date();document.getElementById('clockH').textContent=pad(n.getHours())+':'+pad(n.getMinutes());document.getElementById('clockS').textContent=':'+pad(n.getSeconds())}t();setInterval(t,1000)}
-function initGreeting(){var h=new Date().getHours(),msg,icon;if(h>=5&&h<12){msg='Bom dia!';icon='☀️'}else if(h>=12&&h<18){msg='Boa tarde!';icon='🌤️'}else{msg='Boa noite!';icon='🌙'}document.getElementById('greetMsg').textContent=msg;document.getElementById('greetIcon').textContent=icon;var d=new Date(),dias=['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'],meses=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];document.getElementById('greetDate').textContent=dias[d.getDay()]+', '+d.getDate()+' de '+meses[d.getMonth()]+' de '+d.getFullYear()}
+function initGreeting(){var h=new Date().getHours(),msg,icon;if(h>=5&&h<12){msg='Bom dia, '+sessao.nome+'!';icon='☀️'}else if(h>=12&&h<18){msg='Boa tarde, '+sessao.nome+'!';icon='🌤️'}else{msg='Boa noite, '+sessao.nome+'!';icon='🌙'}document.getElementById('greetMsg').textContent=msg;document.getElementById('greetIcon').textContent=icon;var d=new Date(),dias=['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'],meses=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];document.getElementById('greetDate').textContent=dias[d.getDay()]+', '+d.getDate()+' de '+meses[d.getMonth()]+' de '+d.getFullYear()}
 
-function checkDayReset(){var d=new Date(),dayKey=d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(),monthKey=d.getFullYear()+'-'+(d.getMonth()+1);if(localStorage.getItem('p_dk')!==dayKey){localStorage.setItem('p_dk',dayKey);localStorage.setItem('p_dh','0');localStorage.removeItem('p_tl');registrosHoje=0}else{registrosHoje=parseInt(localStorage.getItem('p_dh')||'0')}if(localStorage.getItem('p_mk')!==monthKey){localStorage.setItem('p_mk',monthKey);localStorage.setItem('p_dm','0');registrosMes=0}else{registrosMes=parseInt(localStorage.getItem('p_dm')||'0')}}
+function checkDayReset(){var d=new Date(),dayKey=d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(),monthKey=d.getFullYear()+'-'+(d.getMonth()+1),prefix='p_'+sessao.nome+'_';if(localStorage.getItem(prefix+'dk')!==dayKey){localStorage.setItem(prefix+'dk',dayKey);localStorage.setItem(prefix+'dh','0');localStorage.removeItem(prefix+'tl');registrosHoje=0}else{registrosHoje=parseInt(localStorage.getItem(prefix+'dh')||'0')}if(localStorage.getItem(prefix+'mk')!==monthKey){localStorage.setItem(prefix+'mk',monthKey);localStorage.setItem(prefix+'dm','0');registrosMes=0}else{registrosMes=parseInt(localStorage.getItem(prefix+'dm')||'0')}}
 function updateStats(){document.getElementById('statHoje').textContent=registrosHoje;document.getElementById('statMes').textContent=registrosMes}
 
 var tapCount={hoje:0,mes:0},tapTimer={hoje:null,mes:null};
-function tapReset(tipo){tapCount[tipo]++;clearTimeout(tapTimer[tipo]);tapTimer[tipo]=setTimeout(function(){tapCount[tipo]=0},800);if(tapCount[tipo]>=3){tapCount[tipo]=0;if(tipo==='hoje'){registrosHoje=0;localStorage.setItem('p_dh','0');localStorage.removeItem('p_tl');for(var i=0;i<4;i++){document.getElementById('tl'+i).classList.remove('done','active');document.getElementById('tl'+i+'t').textContent='--:--'}document.getElementById('tlCount').textContent='0 de 4 registros';marcarBotoesDone()}else{registrosMes=0;localStorage.setItem('p_dm','0')}updateStats();showToast('Contador zerado!','info')}}
+function tapReset(tipo){tapCount[tipo]++;clearTimeout(tapTimer[tipo]);tapTimer[tipo]=setTimeout(function(){tapCount[tipo]=0},800);if(tapCount[tipo]>=3){tapCount[tipo]=0;var prefix='p_'+sessao.nome+'_';if(tipo==='hoje'){registrosHoje=0;localStorage.setItem(prefix+'dh','0');localStorage.removeItem(prefix+'tl');for(var i=0;i<4;i++){document.getElementById('tl'+i).classList.remove('done','active');document.getElementById('tl'+i+'t').textContent='--:--'}document.getElementById('tlCount').textContent='0 de 4 registros';marcarBotoesDone()}else{registrosMes=0;localStorage.setItem(prefix+'dm','0')}updateStats();showToast('Contador zerado!','info')}}
 
 var TL_KEYS=['Entrada','Saída Almoço','Retorno Almoço','Saída Final'];
-function loadTimeline(){
-  var d=JSON.parse(localStorage.getItem('p_tl')||'{}');var count=0;
-  for(var i=0;i<4;i++){var el=document.getElementById('tl'+i),tel=document.getElementById('tl'+i+'t');el.classList.remove('done','active');tel.textContent='--:--';if(d[TL_KEYS[i]]){tel.textContent=d[TL_KEYS[i]];el.classList.add('done');count++}}
-  document.getElementById('tlCount').textContent=count+' de 4 registros';
-  marcarBotoesDone();
-}
-function saveTimeline(tipo,hora){var d=JSON.parse(localStorage.getItem('p_tl')||'{}');d[tipo]=hora;localStorage.setItem('p_tl',JSON.stringify(d));var idx=TL_KEYS.indexOf(tipo);if(idx>=0){document.getElementById('tl'+idx+'t').textContent=hora;document.getElementById('tl'+idx).classList.add('done')}var count=0;TL_KEYS.forEach(function(k){if(d[k])count++});document.getElementById('tlCount').textContent=count+' de 4 registros';marcarBotoesDone()}
-
-function marcarBotoesDone(){
-  var d=JSON.parse(localStorage.getItem('p_tl')||'{}');
-  document.querySelectorAll('.type-btn').forEach(function(btn){
-    btn.classList.remove('done-mark');
-    if(d[btn.dataset.val]){btn.classList.add('done-mark')}
-  });
-}
+function loadTimeline(){var prefix='p_'+sessao.nome+'_';var d=JSON.parse(localStorage.getItem(prefix+'tl')||'{}');var count=0;for(var i=0;i<4;i++){var el=document.getElementById('tl'+i),tel=document.getElementById('tl'+i+'t');el.classList.remove('done','active');tel.textContent='--:--';if(d[TL_KEYS[i]]){tel.textContent=d[TL_KEYS[i]];el.classList.add('done');count++}}document.getElementById('tlCount').textContent=count+' de 4 registros';marcarBotoesDone()}
+function saveTimeline(tipo,hora){var prefix='p_'+sessao.nome+'_';var d=JSON.parse(localStorage.getItem(prefix+'tl')||'{}');d[tipo]=hora;localStorage.setItem(prefix+'tl',JSON.stringify(d));var idx=TL_KEYS.indexOf(tipo);if(idx>=0){document.getElementById('tl'+idx+'t').textContent=hora;document.getElementById('tl'+idx).classList.add('done')}var count=0;TL_KEYS.forEach(function(k){if(d[k])count++});document.getElementById('tlCount').textContent=count+' de 4 registros';marcarBotoesDone()}
+function marcarBotoesDone(){var prefix='p_'+sessao.nome+'_';var d=JSON.parse(localStorage.getItem(prefix+'tl')||'{}');document.querySelectorAll('.type-btn').forEach(function(btn){btn.classList.remove('done-mark');if(d[btn.dataset.val])btn.classList.add('done-mark')})}
 
 function selType(el){document.querySelectorAll('.type-btn').forEach(function(b){b.classList.remove('active')});el.classList.add('active');tipoSelecionado=el.dataset.val}
-
 function showToast(msg,type){var t=document.getElementById('toast');t.textContent=msg;t.className='toast '+(type||'info')+' show';setTimeout(function(){t.classList.remove('show')},3500)}
 
 function initCamera(){navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}}}).then(function(s){stream=s;document.getElementById('camVideo').srcObject=s;document.getElementById('camOverlay').classList.add('hidden');document.getElementById('camViewport').classList.remove('captured');selfieBase64=''}).catch(function(){showToast('Câmera não disponível','error')})}
@@ -575,49 +636,33 @@ function resetCamera(){selfieBase64='';document.getElementById('camViewport').cl
 
 function tentarRegistrar(){
   if(!geoOk){showToast('Você precisa estar dentro de '+RAIO_LIMITE+'m da empresa','error');return}
-  var colab=document.getElementById('selColab').value;
-  if(!colab){showToast('Selecione o colaborador','error');return}
   if(!selfieBase64){showToast('Tire a selfie antes de registrar','error');return}
-
-  var tl=JSON.parse(localStorage.getItem('p_tl')||'{}');
-  if(tl[tipoSelecionado] && !forcarRegistro){
+  var prefix='p_'+sessao.nome+'_';
+  var tl=JSON.parse(localStorage.getItem(prefix+'tl')||'{}');
+  if(tl[tipoSelecionado]&&!forcarRegistro){
     document.getElementById('alertTitle').textContent='Registro Duplicado';
-    document.getElementById('alertMsg').textContent='Você já registrou "'+tipoSelecionado+'" hoje às '+tl[tipoSelecionado]+'. Deseja registrar novamente? O registro anterior será substituído na timeline.';
-    document.getElementById('alertModal').classList.add('show');
-    return;
-  }
-
-  forcarRegistro=false;
-  registrarPonto();
+    document.getElementById('alertMsg').textContent='Você já registrou "'+tipoSelecionado+'" hoje às '+tl[tipoSelecionado]+'. Deseja registrar novamente?';
+    document.getElementById('alertModal').classList.add('show');return}
+  forcarRegistro=false;registrarPonto();
 }
-
-function confirmarRegistro(){
-  document.getElementById('alertModal').classList.remove('show');
-  forcarRegistro=true;
-  registrarPonto();
-}
-function fecharAlerta(){
-  document.getElementById('alertModal').classList.remove('show');
-  forcarRegistro=false;
-}
+function confirmarRegistro(){document.getElementById('alertModal').classList.remove('show');forcarRegistro=true;registrarPonto()}
+function fecharAlerta(){document.getElementById('alertModal').classList.remove('show');forcarRegistro=false}
 
 function registrarPonto(){
   forcarRegistro=false;
-  var colab=document.getElementById('selColab').value;
   var btn=document.getElementById('btnSubmit');
   btn.disabled=true;btn.innerHTML='<span class="shimmer"></span>Enviando...';
-
   var agora=new Date();
   var horaStr=pad(agora.getHours())+':'+pad(agora.getMinutes())+':'+pad(agora.getSeconds());
   var selfieClean=selfieBase64.replace(/^data:image\/(png|jpeg|jpg);base64,/,'');
-
-  var payload={nome:colab,tipo:tipoSelecionado,selfie:selfieClean,latitude:userLat||0,longitude:userLng||0};
+  var payload={nome:sessao.nome,tipo:tipoSelecionado,selfie:selfieClean,latitude:userLat||0,longitude:userLng||0};
 
   fetch(API_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).then(function(){
+    var prefix='p_'+sessao.nome+'_';
     registrosHoje++;registrosMes++;
-    localStorage.setItem('p_dh',String(registrosHoje));localStorage.setItem('p_dm',String(registrosMes));
+    localStorage.setItem(prefix+'dh',String(registrosHoje));localStorage.setItem(prefix+'dm',String(registrosMes));
     updateStats();saveTimeline(tipoSelecionado,horaStr.substring(0,5));
-    document.getElementById('ovDetail').innerHTML='<strong>Colaborador:</strong> '+colab+'<br><strong>Tipo:</strong> '+tipoSelecionado+'<br><strong>Horário:</strong> '+horaStr+'<br><strong>Data:</strong> '+pad(agora.getDate())+'/'+pad(agora.getMonth()+1)+'/'+agora.getFullYear()+'<br><strong>Distância:</strong> '+(userDist?Math.round(userDist)+'m':'—')+'<br><strong>Status:</strong> <span style="color:var(--accent-green)">✅ Dentro da área</span>';
+    document.getElementById('ovDetail').innerHTML='<strong>Colaborador:</strong> '+sessao.nome+'<br><strong>Tipo:</strong> '+tipoSelecionado+'<br><strong>Horário:</strong> '+horaStr+'<br><strong>Data:</strong> '+pad(agora.getDate())+'/'+pad(agora.getMonth()+1)+'/'+agora.getFullYear()+'<br><strong>Distância:</strong> '+(userDist?Math.round(userDist)+'m':'—')+'<br><strong>Status:</strong> <span style="color:var(--accent-green)">✅ Dentro da área</span>';
     document.getElementById('ovSuccess').classList.add('show');
     setTimeout(function(){document.getElementById('ovSuccess').classList.remove('show')},4500);
     resetCamera();btn.disabled=false;btn.innerHTML='<span class="shimmer"></span>⏱ Registrar Ponto';checkSubmit();
@@ -625,125 +670,51 @@ function registrarPonto(){
 }
 
 function syncComPlanilha(){
-  fetch(API_URL+'?sync=1').then(function(r){return r.json()}).then(function(d){
+  fetch(API_URL+'?sync=1&nome='+encodeURIComponent(sessao.nome)).then(function(r){return r.json()}).then(function(d){
+    var prefix='p_'+sessao.nome+'_';
     registrosHoje=d.hoje||0;registrosMes=d.mes||0;
-    localStorage.setItem('p_dh',String(registrosHoje));localStorage.setItem('p_dm',String(registrosMes));
+    localStorage.setItem(prefix+'dh',String(registrosHoje));localStorage.setItem(prefix+'dm',String(registrosMes));
     updateStats();
-    if(d.timeline){localStorage.setItem('p_tl',JSON.stringify(d.timeline));loadTimeline()}
+    if(d.timeline){localStorage.setItem(prefix+'tl',JSON.stringify(d.timeline));loadTimeline()}
   }).catch(function(){});
 }
 
-/* ═══ SENHA — CAMADA 1 (FRONT) ═══ */
+/* ═══ RELATÓRIO (só gestor) ═══ */
 function abrirRelatorio(){
-  // Abre o modal de senha
-  document.getElementById('pwdInput').value='';
-  document.getElementById('pwdError').textContent='';
-  document.getElementById('pwdInput').classList.remove('error');
-  document.getElementById('pwdModal').classList.add('show');
-  setTimeout(function(){document.getElementById('pwdInput').focus()},200);
-}
-
-function fecharSenha(){
-  document.getElementById('pwdModal').classList.remove('show');
-  document.getElementById('pwdInput').value='';
-  document.getElementById('pwdError').textContent='';
-  document.getElementById('pwdInput').classList.remove('error');
-}
-
-function validarSenha(){
-  var input=document.getElementById('pwdInput');
-  var erro=document.getElementById('pwdError');
-  var senha=input.value.trim();
-
-  if(!senha){
-    input.classList.add('error');
-    erro.textContent='Digite a senha de acesso';
-    return;
-  }
-
-  // Camada 1: verifica no front
-  if(senha!==SENHA_GESTOR){
-    input.classList.add('error');
-    erro.textContent='Senha incorreta. Acesso negado.';
-    input.value='';
-    setTimeout(function(){input.focus()},300);
-    return;
-  }
-
-  // Senha correta no front → guarda e prossegue
-  senhaValidada=senha;
-  fecharSenha();
-  carregarRelatorio();
-}
-
-/* ═══ RELATÓRIO — CAMADA 2 (SERVIDOR) ═══ */
-function carregarRelatorio(){
   var btn=document.getElementById('btnRelatorio');
-  btn.classList.add('loading');
-  btn.innerHTML='⏳ Carregando relatório...';
-
+  btn.classList.add('loading');btn.innerHTML='⏳ Carregando...';
   document.getElementById('relModal').classList.add('show');
   document.getElementById('relBody').innerHTML='<div class="rel-empty">⏳ Consultando planilha...</div>';
   document.getElementById('relSub').textContent='Autenticando...';
 
-  // Camada 2: envia senha para o servidor
-  fetch(API_URL+'?relatorio=1&senha='+encodeURIComponent(senhaValidada))
+  fetch(API_URL+'?relatorio=1&usuario='+encodeURIComponent(sessao.nome)+'&senha='+encodeURIComponent(sessao.senha))
   .then(function(r){return r.json()})
   .then(function(data){
-    btn.classList.remove('loading');
-    btn.innerHTML='🔐 Relatório de Horas do Mês';
-
-    // Servidor rejeitou?
-    if(data.erro){
-      document.getElementById('relBody').innerHTML='<div class="rel-empty">🚫 '+data.erro+'</div>';
-      document.getElementById('relSub').textContent='Acesso negado';
-      senhaValidada='';
-      return;
-    }
-
+    btn.classList.remove('loading');btn.innerHTML='📊 Relatório de Horas do Mês';
+    if(data.erro){document.getElementById('relBody').innerHTML='<div class="rel-empty">🚫 '+data.erro+'</div>';document.getElementById('relSub').textContent='Acesso negado';return}
     renderRelatorio(data);
   })
-  .catch(function(err){
-    document.getElementById('relBody').innerHTML='<div class="rel-empty">❌ Erro ao carregar relatório. Verifique a conexão.</div>';
-    document.getElementById('relSub').textContent='Erro de conexão';
-    btn.classList.remove('loading');
-    btn.innerHTML='🔐 Relatório de Horas do Mês';
+  .catch(function(){
+    document.getElementById('relBody').innerHTML='<div class="rel-empty">❌ Erro ao carregar. Verifique a conexão.</div>';
+    document.getElementById('relSub').textContent='Erro';
+    btn.classList.remove('loading');btn.innerHTML='📊 Relatório de Horas do Mês';
   });
 }
-
-function fecharRelatorio(){
-  document.getElementById('relModal').classList.remove('show');
-  senhaValidada='';
-}
+function fecharRelatorio(){document.getElementById('relModal').classList.remove('show')}
 
 function renderRelatorio(data){
   var meses={'01':'Janeiro','02':'Fevereiro','03':'Março','04':'Abril','05':'Maio','06':'Junho','07':'Julho','08':'Agosto','09':'Setembro','10':'Outubro','11':'Novembro','12':'Dezembro'};
-  var partesMes=data.mes.split('/');
-  var nomeMes=meses[partesMes[0]]||partesMes[0];
-  document.getElementById('relSub').textContent=nomeMes+' '+partesMes[1]+' — Gerado às '+data.geradoEm;
-
+  var p=data.mes.split('/');var nm=meses[p[0]]||p[0];
+  document.getElementById('relSub').textContent=nm+' '+p[1]+' — Gerado às '+data.geradoEm;
   var html='<div class="rel-meta">';
-  html+='<span class="rel-meta-tag">📅 '+nomeMes+' '+partesMes[1]+'</span>';
+  html+='<span class="rel-meta-tag">📅 '+nm+' '+p[1]+'</span>';
   html+='<span class="rel-meta-tag">⏰ Jornada: '+data.jornada+'/dia</span>';
   html+='<span class="rel-meta-tag">👥 '+data.colaboradores.length+' colaboradores</span>';
-  html+='<span class="rel-meta-tag" style="background:rgba(16,185,129,.1);color:var(--accent-green);border-color:rgba(16,185,129,.2)">🔓 Autenticado</span>';
-  html+='</div>';
-
-  if(!data.colaboradores||data.colaboradores.length===0){
-    html+='<div class="rel-empty">Nenhum registro encontrado para este mês.</div>';
-    document.getElementById('relBody').innerHTML=html;
-    return;
-  }
-
+  html+='<span class="rel-meta-tag" style="background:rgba(16,185,129,.1);color:var(--accent-green);border-color:rgba(16,185,129,.2)">🔓 Autenticado</span></div>';
+  if(!data.colaboradores||!data.colaboradores.length){html+='<div class="rel-empty">Nenhum registro encontrado.</div>';document.getElementById('relBody').innerHTML=html;return}
   for(var i=0;i<data.colaboradores.length;i++){
-    var c=data.colaboradores[i];
-    var classe=c.saldoPositivo?'positive':(c.saldoMin<0?'negative':'neutral');
-    html+='<div class="rel-card '+classe+'">';
-    html+='<div class="rel-card-header">';
-    html+='<div class="rel-card-name">👤 '+c.nome+'</div>';
-    html+='<div class="rel-card-saldo">'+c.saldo+'</div>';
-    html+='</div>';
-    html+='<div class="rel-grid">';
+    var c=data.colaboradores[i];var cl=c.saldoPositivo?'positive':(c.saldoMin<0?'negative':'neutral');
+    html+='<div class="rel-card '+cl+'"><div class="rel-card-header"><div class="rel-card-name">👤 '+c.nome+'</div><div class="rel-card-saldo">'+c.saldo+'</div></div><div class="rel-grid">';
     html+='<div class="rel-item"><div class="rel-item-val">'+c.diasTrabalhados+'</div><div class="rel-item-label">Dias Trabalhados</div></div>';
     html+='<div class="rel-item"><div class="rel-item-val">'+c.totalTrabalhadas+'</div><div class="rel-item-label">Total Trabalhadas</div></div>';
     html+='<div class="rel-item"><div class="rel-item-val green">'+c.totalExtras+'</div><div class="rel-item-label">Horas Extras</div></div>';
@@ -752,12 +723,11 @@ function renderRelatorio(data){
     html+='<div class="rel-item"><div class="rel-item-val amber">'+c.totalAtraso+'min</div><div class="rel-item-label">Atrasos Total</div></div>';
     html+='</div></div>';
   }
-
   document.getElementById('relBody').innerHTML=html;
 }
 
 /* ═══ INIT ═══ */
-initClock();initGreeting();checkDayReset();updateStats();loadTimeline();syncComPlanilha();initGeo();
+verificarSessao();
 </script>
 </body>
 </html>
