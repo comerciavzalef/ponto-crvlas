@@ -255,6 +255,9 @@ function carregarPainel(isPrinting) {
     .catch(function () { body.innerHTML = '<p style="color:var(--red);padding:20px;">Erro de conexão</p>'; });
 }
 
+function abrirRelatorio() { document.getElementById('relModal').classList.add('show'); carregarRelatorio(); }
+function fecharRelatorio() { document.getElementById('relModal').classList.remove('show'); }
+
 function carregarRelatorio() {
   var body = document.getElementById('relBody');
   body.innerHTML = '<div style="text-align:center;padding:60px 20px;"><div class="ld-spinner" style="margin:0 auto;"></div></div>';
@@ -267,11 +270,6 @@ function carregarRelatorio() {
     })
     .catch(function() { body.innerHTML = '<p style="color:var(--red);padding:20px;">Erro de conexão</p>'; });
 }
-}
-
-function abrirRelatorio() { document.getElementById('relModal').classList.add('show'); carregarRelatorio(); }
-function fecharRelatorio() { document.getElementById('relModal').classList.remove('show'); }
-function carregarRelatorio() { var body = document.getElementById('relBody'); body.innerHTML = '<div style="text-align:center;padding:60px 20px;"><div class="ld-spinner" style="margin:0 auto;"></div></div>'; fetch(API_URL + '?relatorio=1&senha=' + encodeURIComponent(sessao.senha)).then(function(r){return r.json();}).then(function(d){ renderRelatorio(d); }); }
 
 function renderRelatorio(d) {
   var h = '<p style="color:var(--text-tertiary);font-size:.82rem;margin-bottom:24px;">Gerado: ' + d.geradoEm + '</p>';
