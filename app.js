@@ -229,8 +229,44 @@ function salvarJustificativa() {
 
 // ── Exportação PDF ──
 function exportarPDF() {
-  abrirPainel(); // Garante que o painel está atualizado e visível na memória
-  setTimeout(function() { document.body.classList.add('print-mode'); window.print(); document.body.classList.remove('print-mode'); }, 800);
+  document.getElementById('painelModal').classList.add('show');
+  carregarPainel(true); // Envia um aviso: "Quando carregar os dados, imprima"
+}
+
+function carregarPainel(isPrinting) {
+  var body = document.getElementById('painelBody');
+  body.innerHTML = '<div style="text-align:center;padding:60px 20px;"><div class="ld-spinner" style="margin:0 auto;"></div><p style="color:var(--text-tertiary);margin-top:16px;font-size:.85rem;">A sincronizar painel...</p></div>';
+  
+  fetch(API_URL + '?painel=1&senha=' + encodeURIComponent(sessao.senha))
+    .then(function (r) { return r.json(); })
+    .then(function (d) { 
+      if (d.erro) { body.innerHTML = '<p style="color:var(--red);padding:20px;">' + d.erro + '</p>'; return; } 
+      renderPainel(d); 
+      
+      // A mágica: O PDF só é gerado AGORA, depois que os dados estão 100% carregados
+      if (isPrinting) {
+        setTimeout(function() { 
+          document.body.classList.add('print-mode'); 
+          window.print(); 
+          document.body.classList.remove('print-mode'); 
+        }, 500);
+      }
+    })
+    .catch(function () { body.innerHTML = '<p style="color:var(--red);padding:20px;">Erro de conexão</p>'; });
+}
+
+function carregarRelatorio() {
+  var body = document.getElementById('relBody');
+  body.innerHTML = '<div style="text-align:center;padding:60px 20px;"><div class="ld-spinner" style="margin:0 auto;"></div></div>';
+  
+  fetch(API_URL + '?relatorio=1&senha=' + encodeURIComponent(sessao.senha))
+    .then(function(r){ return r.json(); })
+    .then(function(d){ 
+      if (d.erro) { body.innerHTML = '<p style="color:var(--red);padding:20px;">' + d.erro + '</p>'; return; }
+      renderRelatorio(d); 
+    })
+    .catch(function() { body.innerHTML = '<p style="color:var(--red);padding:20px;">Erro de conexão</p>'; });
+}
 }
 
 function abrirRelatorio() { document.getElementById('relModal').classList.add('show'); carregarRelatorio(); }
