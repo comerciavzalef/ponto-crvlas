@@ -28,6 +28,7 @@
     <div class="brand-icon">⏱</div>
     <h2>Ponto Digital</h2>
     <p class="sub">CRV/LAS — Controle de Ponto</p>
+
     <select id="loginUser" class="login-field">
       <option value="">Selecione seu nome</option>
       <option value="LUCAS">Lucas</option>
@@ -36,17 +37,21 @@
       <option value="ALEX">Alex</option>
       <option value="ALEF">Alef (Gestor)</option>
     </select>
-   <div style="position:relative; margin-bottom:14px;">
-  <input type="password" id="loginPass" class="login-field" placeholder="Sua senha" autocomplete="off" style="padding-right:48px; margin-bottom:0;">
-  <button type="button" onclick="toggleSenha()" style="
-    position:absolute; right:12px; top:50%; transform:translateY(-50%);
-    background:none; border:none; cursor:pointer; font-size:1.1rem;
-    color:var(--text-dim); padding:4px; transition:all .3s ease;
-  " id="eyeBtn"><span id="eyeIcon">👁️</span></button>
-</div>
 
-</div>
+    <div style="position:relative; margin-bottom:14px;">
+      <input type="password" id="loginPass" class="login-field" placeholder="Sua senha" autocomplete="off" style="padding-right:48px; margin-bottom:0;">
+      <button type="button" onclick="toggleSenha()" style="
+        position:absolute; right:12px; top:50%; transform:translateY(-50%);
+        background:none; border:none; cursor:pointer; font-size:1.1rem;
+        color:var(--text-dim); padding:4px;
+      " id="eyeBtn"><span id="eyeIcon">👁️</span></button>
+    </div>
 
+    <button class="login-btn" id="loginBtn" onclick="fazerLogin()">Entrar</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+  
 <!-- ══════════════ LOADING ══════════════ -->
 <div id="ldScreen" class="hidden">
   <div class="ld-spinner"></div>
