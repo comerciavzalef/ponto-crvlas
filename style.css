@@ -1430,3 +1430,20 @@ select.login-field option {
   color: var(--text-primary); font-family: var(--font); font-size: .88rem; outline: none;
 }
 .viagem-field:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-soft); }
+
+/* ══════════════════════════════════════════════════════════════
+   IMPRESSÃO / PDF EXPORT (Gestor)
+   ══════════════════════════════════════════════════════════════ */
+@media print {
+  body.print-mode { background: #fff !important; color: #000 !important; }
+  body.print-mode .bg-scene, body.print-mode .top-bar, body.print-mode .container { display: none !important; }
+  body.print-mode .modal-full { position: static !important; background: #fff !important; display: block !important; overflow: visible !important; }
+  body.print-mode .modal-bar button.modal-close, body.print-mode .modal-bar h2 { display: none !important; }
+  body.print-mode #printHeader { display: block !important; }
+  body.print-mode .painel-stats .p-stat { background: #f5f5f7 !important; border: 1px solid #ddd !important; }
+  body.print-mode .p-val { color: #000 !important; }
+  body.print-mode .colab-card, body.print-mode .alerta-item { background: #fff !important; border: 1px solid #ddd !important; box-shadow: none !important; color: #000 !important; page-break-inside: avoid; }
+  body.print-mode .c-nome, body.print-mode .c-status, body.print-mode .a-text, body.print-mode .a-time { color: #000 !important; }
+  body.print-mode .c-avatar { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body.print-mode button { display: none !important; }
+}
