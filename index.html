@@ -11,419 +11,18 @@
 <title>Ponto Digital — CRV/LAS</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%230a1628'/%3E%3Ctext x='50' y='50' text-anchor='middle' fill='%2306b6d4' font-family='Arial' font-weight='900' font-size='28' dy='.35em'%3E⏱%3C/text%3E%3C/svg%3E">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-<style>
-/* ══════════════════════════════════════════
-   DESIGN SYSTEM v5.1 — PREMIUM DARK GLASS
-   ══════════════════════════════════════════ */
-:root{
-  --navy-deep:#050d18;--navy:#0a1628;--navy-light:#0f2035;
-  --panel:rgba(15,32,53,.55);--panel-solid:rgba(15,32,53,.85);
-  --glass:rgba(6,182,212,.06);--glass-border:rgba(6,182,212,.12);
-  --cyan:#06b6d4;--cyan-bright:#22d3ee;--cyan-dim:rgba(6,182,212,.25);
-  --green:#10b981;--green-dim:rgba(16,185,129,.18);
-  --red:#ef4444;--red-dim:rgba(239,68,68,.18);
-  --amber:#f59e0b;--amber-dim:rgba(245,158,11,.18);
-  --purple:#a855f7;--purple-dim:rgba(168,85,247,.18);
-  --blue:#3b82f6;--blue-dim:rgba(59,130,246,.18);
-  --text:#e2e8f0;--text-dim:#64748b;--text-bright:#f8fafc;
-  --font:'Inter',system-ui,-apple-system,sans-serif;
-  --mono:'JetBrains Mono',monospace;
-  --radius:16px;--radius-sm:10px;--radius-xs:6px;
-  --transition:all .3s cubic-bezier(.4,0,.2,1);
-}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-html{font-size:16px;-webkit-text-size-adjust:100%;}
-body{
-  font-family:var(--font);color:var(--text);
-  background:var(--navy-deep);min-height:100vh;min-height:100dvh;
-  overflow-x:hidden;-webkit-font-smoothing:antialiased;
-}
-
-/* ── BG Scene ─────────────────────────── */
-.bg-scene{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;}
-.bg-scene .orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.18;animation:orbFloat 20s ease-in-out infinite;}
-.bg-scene .orb:nth-child(1){width:500px;height:500px;background:var(--cyan);top:-15%;left:-10%;}
-.bg-scene .orb:nth-child(2){width:400px;height:400px;background:var(--purple);bottom:-10%;right:-8%;animation-delay:-7s;}
-.bg-scene .orb:nth-child(3){width:300px;height:300px;background:var(--green);top:50%;left:60%;animation-delay:-14s;}
-@keyframes orbFloat{0%,100%{transform:translateY(0) scale(1);}50%{transform:translateY(-40px) scale(1.08);}}
-
-/* ── Login Screen ─────────────────────── */
-#loginScreen{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;background:var(--navy-deep);}
-#loginScreen.hidden{display:none;}
-.login-card{
-  background:var(--panel-solid);border:1px solid var(--glass-border);
-  border-radius:var(--radius);padding:40px 32px;width:min(400px,90vw);
-  text-align:center;backdrop-filter:blur(20px);animation:fadeUp .6s ease;
-}
-@keyframes fadeUp{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:translateY(0);}}
-.login-card .brand-icon{
-  width:70px;height:70px;border-radius:18px;
-  background:linear-gradient(135deg,var(--cyan),var(--purple));
-  display:flex;align-items:center;justify-content:center;
-  margin:0 auto 18px;font-size:28px;color:#fff;
-  box-shadow:0 8px 32px rgba(6,182,212,.3);
-}
-.login-card h2{font-size:1.3rem;font-weight:700;color:var(--text-bright);margin-bottom:4px;}
-.login-card .sub{font-size:.82rem;color:var(--text-dim);margin-bottom:28px;}
-.login-field{
-  width:100%;padding:14px 16px;margin-bottom:14px;
-  background:var(--navy-light);border:1px solid var(--glass-border);
-  border-radius:var(--radius-sm);color:var(--text-bright);
-  font-family:var(--font);font-size:.95rem;outline:none;transition:var(--transition);
-}
-.login-field:focus{border-color:var(--cyan);box-shadow:0 0 0 3px var(--cyan-dim);}
-.login-field::placeholder{color:var(--text-dim);}
-select.login-field{
-  appearance:none;cursor:pointer;background-color:var(--navy-light);
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748b' stroke-width='2' fill='none'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;background-position:right 14px center;
-}
-.login-btn{
-  width:100%;padding:14px;margin-top:6px;
-  background:linear-gradient(135deg,var(--cyan),#0891b2);
-  border:none;border-radius:var(--radius-sm);
-  color:#fff;font-weight:700;font-size:1rem;cursor:pointer;
-  transition:var(--transition);font-family:var(--font);
-}
-.login-btn:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(6,182,212,.35);}
-.login-btn:active{transform:scale(.98);}
-.login-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
-.login-error{color:var(--red);font-size:.82rem;min-height:20px;margin-top:10px;}
-@keyframes loginShake{0%,100%{transform:translateX(0);}20%,60%{transform:translateX(-8px);}40%,80%{transform:translateX(8px);}}
-.shake{animation:loginShake .4s ease;}
-
-/* ── Loading Screen ───────────────────── */
-#ldScreen{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:24px;background:var(--navy-deep);transition:opacity .5s ease;}
-#ldScreen.hidden{opacity:0;pointer-events:none;}
-.ld-spinner{width:48px;height:48px;border-radius:50%;border:3px solid var(--glass-border);border-top-color:var(--cyan);animation:spin .8s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg);}}
-.ld-text{color:var(--text-dim);font-size:.85rem;}
-#ldBarTop{position:fixed;top:0;left:0;height:3px;z-index:9998;background:linear-gradient(90deg,var(--cyan),var(--purple));width:0;transition:width .4s ease;}
-
-/* ══════════════════════════════════════════
-   TOP BAR — PREMIUM LAYOUT
-   ══════════════════════════════════════════ */
-.top-bar{
-  position:sticky;top:0;z-index:100;
-  background:var(--panel-solid);backdrop-filter:blur(20px);
-  border-bottom:1px solid var(--glass-border);
-  padding:16px 20px;
-}
-.top-bar-row1{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
-.top-bar .brand{display:flex;align-items:center;gap:12px;}
-.top-bar .brand-dot{
-  width:40px;height:40px;border-radius:12px;
-  background:linear-gradient(135deg,var(--cyan),var(--purple));
-  display:flex;align-items:center;justify-content:center;
-  font-size:18px;box-shadow:0 4px 15px rgba(6,182,212,.25);
-}
-.top-bar .brand-text h1{font-size:1.05rem;font-weight:800;color:var(--text-bright);line-height:1.2;}
-.top-bar .brand-text span{font-size:.72rem;color:var(--text-dim);font-weight:400;}
-.btn-logout{
-  background:var(--red-dim);color:var(--red);
-  border:1px solid rgba(239,68,68,.2);border-radius:var(--radius-xs);
-  padding:7px 14px;font-size:.75rem;font-weight:600;cursor:pointer;
-  transition:var(--transition);font-family:var(--font);
-}
-.btn-logout:hover{background:var(--red);color:#fff;}
-.top-bar-row2{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-.badge{
-  padding:5px 12px;border-radius:20px;font-size:.68rem;
-  font-weight:700;text-transform:uppercase;letter-spacing:.5px;
-}
-.badge-online{background:var(--green-dim);color:var(--green);}
-.badge-offline{background:var(--red-dim);color:var(--red);}
-.badge-gestor{background:var(--purple-dim);color:var(--purple);}
-.user-badge{
-  padding:5px 12px;border-radius:20px;font-size:.72rem;
-  font-weight:600;background:var(--cyan-dim);color:var(--cyan);
-}
-
-/* ══════════════════════════════════════════
-   CONTAINER
-   ══════════════════════════════════════════ */
-.container{max-width:600px;margin:0 auto;padding:24px 16px 40px;position:relative;z-index:1;}
-
-/* ══════════════════════════════════════════
-   STATS — PREMIUM CARDS
-   ══════════════════════════════════════════ */
-.section-label{
-  font-size:.7rem;font-weight:700;color:var(--text-dim);
-  text-transform:uppercase;letter-spacing:1.2px;
-  margin-bottom:12px;padding-left:2px;
-}
-.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:24px;}
-.stat-card{
-  background:var(--panel);border:1px solid var(--glass-border);
-  border-radius:var(--radius);padding:18px 16px;
-  backdrop-filter:blur(12px);transition:var(--transition);
-  position:relative;overflow:hidden;
-}
-.stat-card::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:3px;
-  border-radius:var(--radius) var(--radius) 0 0;
-}
-.stat-card.cyan::before{background:linear-gradient(90deg,var(--cyan),var(--cyan-bright));}
-.stat-card.green::before{background:linear-gradient(90deg,var(--green),#34d399);}
-.stat-card.purple::before{background:linear-gradient(90deg,var(--purple),#c084fc);}
-.stat-card.red::before{background:linear-gradient(90deg,var(--red),#f87171);}
-.stat-card.amber::before{background:linear-gradient(90deg,var(--amber),#fbbf24);}
-.stat-card:hover{transform:translateY(-2px);border-color:var(--cyan-dim);}
-.stat-card .s-icon{font-size:1.4rem;margin-bottom:8px;display:block;}
-.stat-card .s-label{font-size:.68rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
-.stat-card .s-value{font-size:1.5rem;font-weight:900;font-family:var(--mono);}
-.stat-card .s-value.cyan{color:var(--cyan-bright);}
-.stat-card .s-value.green{color:var(--green);}
-.stat-card .s-value.purple{color:var(--purple);}
-.stat-card .s-value.red{color:var(--red);}
-.stat-card .s-value.amber{color:var(--amber);}
-
-/* ══════════════════════════════════════════
-   GEO STATUS — PREMIUM
-   ══════════════════════════════════════════ */
-.geo-card{
-  background:var(--panel);border:1px solid var(--glass-border);
-  border-radius:var(--radius);padding:18px;margin-bottom:20px;
-  display:flex;align-items:center;gap:14px;
-  backdrop-filter:blur(12px);transition:var(--transition);
-}
-.geo-card:hover{border-color:var(--cyan-dim);}
-.geo-indicator{
-  width:48px;height:48px;border-radius:14px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:1.3rem;flex-shrink:0;transition:var(--transition);
-}
-.geo-indicator.ok{background:var(--green-dim);box-shadow:0 0 20px rgba(16,185,129,.15);}
-.geo-indicator.fora{background:var(--red-dim);box-shadow:0 0 20px rgba(239,68,68,.15);}
-.geo-indicator.buscando{background:var(--amber-dim);box-shadow:0 0 20px rgba(245,158,11,.15);animation:pulse 2s infinite;}
-@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.5;}}
-.geo-info{flex:1;}
-.geo-info .geo-label{font-size:.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;}
-.geo-info .geo-value{font-size:.92rem;font-weight:700;color:var(--text-bright);}
-.geo-info .geo-dist{font-size:.75rem;color:var(--text-dim);margin-top:3px;font-family:var(--mono);}
-
-/* ══════════════════════════════════════════
-   CAMERA — PREMIUM
-   ══════════════════════════════════════════ */
-.camera-card{
-  background:var(--panel);border:1px solid var(--glass-border);
-  border-radius:var(--radius);padding:20px;margin-bottom:20px;
-  backdrop-filter:blur(12px);
-}
-.camera-card .cam-title{font-size:.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;text-align:center;}
-.video-wrap{
-  position:relative;width:100%;max-width:280px;margin:0 auto;
-  border-radius:var(--radius);overflow:hidden;background:#000;
-  aspect-ratio:1/1;border:2px solid var(--glass-border);
-  box-shadow:0 8px 32px rgba(0,0,0,.3);
-}
-.video-wrap video,.video-wrap canvas{width:100%;height:100%;object-fit:cover;display:block;}
-.video-wrap canvas{display:none;}
-.cam-actions{display:flex;gap:10px;justify-content:center;margin-top:14px;}
-.cam-btn{
-  padding:11px 20px;border-radius:var(--radius-sm);
-  border:1px solid var(--glass-border);background:var(--navy-light);
-  color:var(--text-bright);font-size:.82rem;font-weight:600;
-  cursor:pointer;transition:var(--transition);font-family:var(--font);
-  display:flex;align-items:center;gap:6px;
-}
-.cam-btn:hover{border-color:var(--cyan);background:var(--cyan-dim);}
-.cam-btn.primary{background:var(--cyan);color:#fff;border-color:var(--cyan);}
-.cam-btn.primary:hover{background:var(--cyan-bright);box-shadow:0 4px 15px rgba(6,182,212,.3);}
-.cam-btn:disabled{opacity:.4;cursor:not-allowed;}
-.selfie-ok{
-  color:var(--green);font-size:.82rem;font-weight:600;
-  margin-top:10px;display:none;text-align:center;
-}
-
-/* ══════════════════════════════════════════
-   TYPE SELECTION — PREMIUM
-   ══════════════════════════════════════════ */
-.type-card{
-  background:var(--panel);border:1px solid var(--glass-border);
-  border-radius:var(--radius);padding:20px;margin-bottom:20px;
-  backdrop-filter:blur(12px);
-}
-.type-card .type-title{font-size:.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;}
-.type-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
-.type-btn{
-  padding:16px 12px;border-radius:var(--radius-sm);
-  border:1px solid var(--glass-border);background:var(--navy-light);
-  color:var(--text);font-size:.82rem;font-weight:600;
-  cursor:pointer;transition:var(--transition);text-align:center;
-  font-family:var(--font);position:relative;overflow:hidden;
-}
-.type-btn:hover{border-color:var(--cyan-dim);background:var(--glass);}
-.type-btn.selected{
-  border-color:var(--cyan);background:var(--cyan-dim);
-  color:var(--cyan-bright);box-shadow:0 0 20px var(--cyan-dim);
-}
-.type-btn .type-icon{font-size:1.5rem;margin-bottom:6px;display:block;}
-
-/* ══════════════════════════════════════════
-   SUBMIT BUTTON
-   ══════════════════════════════════════════ */
-.submit-btn{
-  width:100%;padding:18px;border-radius:var(--radius);border:none;
-  background:linear-gradient(135deg,var(--green),#059669);
-  color:#fff;font-size:1.05rem;font-weight:800;cursor:pointer;
-  transition:var(--transition);font-family:var(--font);margin-bottom:24px;
-  box-shadow:0 4px 20px rgba(16,185,129,.2);
-}
-.submit-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 30px rgba(16,185,129,.35);}
-.submit-btn:active:not(:disabled){transform:scale(.98);}
-.submit-btn:disabled{opacity:.35;cursor:not-allowed;transform:none;box-shadow:none;}
-
-/* ══════════════════════════════════════════
-   GESTOR SECTION
-   ══════════════════════════════════════════ */
-.gestor-section{display:none;margin-bottom:24px;}
-.gestor-section.show{display:block;}
-.gestor-btns{display:flex;flex-direction:column;gap:10px;}
-.gestor-btn{
-  padding:16px 20px;border-radius:var(--radius);
-  border:1px solid var(--glass-border);background:var(--panel);
-  color:var(--text-bright);font-size:.9rem;font-weight:600;
-  cursor:pointer;transition:var(--transition);text-align:left;
-  display:flex;align-items:center;gap:12px;font-family:var(--font);
-  backdrop-filter:blur(12px);
-}
-.gestor-btn:hover{border-color:var(--purple);background:var(--purple-dim);transform:translateY(-1px);}
-.gestor-btn .g-icon{
-  width:40px;height:40px;border-radius:12px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:1.2rem;background:var(--purple-dim);flex-shrink:0;
-}
-.gestor-btn .g-text{display:flex;flex-direction:column;}
-.gestor-btn .g-text span:first-child{font-weight:700;}
-.gestor-btn .g-text span:last-child{font-size:.72rem;color:var(--text-dim);font-weight:400;margin-top:2px;}
-
-/* ══════════════════════════════════════════
-   TIMELINE
-   ══════════════════════════════════════════ */
-.timeline-card{
-  background:var(--panel);border:1px solid var(--glass-border);
-  border-radius:var(--radius);padding:20px;margin-bottom:24px;
-  backdrop-filter:blur(12px);
-}
-.timeline-card .tl-title{font-size:.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;}
-.timeline-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--glass-border);}
-.timeline-item:last-child{border-bottom:none;}
-.tl-hora{font-family:var(--mono);font-size:.8rem;font-weight:700;color:var(--cyan);width:58px;flex-shrink:0;}
-.tl-nome{font-size:.84rem;font-weight:600;color:var(--text-bright);flex:1;}
-.tl-tipo{font-size:.7rem;padding:4px 10px;border-radius:10px;font-weight:700;}
-.tl-ENTRADA{background:var(--green-dim);color:var(--green);}
-.tl-SAÍDA{background:var(--red-dim);color:var(--red);}
-.tl-SAÍDA_ALMOÇO{background:var(--amber-dim);color:var(--amber);}
-.tl-RETORNO_ALMOÇO{background:var(--cyan-dim);color:var(--cyan);}
-
-/* ══════════════════════════════════════════
-   MODALS — PAINEL + RELATÓRIO
-   ══════════════════════════════════════════ */
-.modal-full{display:none;position:fixed;inset:0;z-index:5000;background:var(--navy-deep);overflow-y:auto;}
-.modal-full.show{display:block;}
-.modal-bar{
-  position:sticky;top:0;z-index:10;
-  background:var(--panel-solid);backdrop-filter:blur(20px);
-  border-bottom:1px solid var(--glass-border);
-  padding:16px 20px;display:flex;align-items:center;justify-content:space-between;
-}
-.modal-bar h2{font-size:1rem;font-weight:700;color:var(--text-bright);display:flex;align-items:center;gap:8px;}
-.modal-close{
-  background:var(--red-dim);color:var(--red);
-  border:1px solid rgba(239,68,68,.2);border-radius:var(--radius-xs);
-  padding:8px 16px;font-size:.78rem;font-weight:600;cursor:pointer;font-family:var(--font);
-}
-.modal-body{max-width:700px;margin:0 auto;padding:24px 16px;}
-
-/* Painel Tempo Real */
-.painel-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px;}
-.p-stat{
-  background:var(--panel);border:1px solid var(--glass-border);
-  border-radius:var(--radius);padding:18px;text-align:center;
-}
-.p-stat .p-val{font-size:1.8rem;font-weight:900;font-family:var(--mono);}
-.p-stat .p-val.green{color:var(--green);}
-.p-stat .p-val.red{color:var(--red);}
-.p-stat .p-val.cyan{color:var(--cyan);}
-.p-stat .p-lbl{font-size:.68rem;color:var(--text-dim);text-transform:uppercase;margin-top:6px;}
-.colab-card{
-  background:var(--panel);border:1px solid var(--glass-border);
-  border-radius:var(--radius-sm);padding:16px;margin-bottom:10px;
-  display:flex;align-items:center;gap:14px;
-}
-.c-avatar{
-  width:44px;height:44px;border-radius:12px;
-  display:flex;align-items:center;justify-content:center;
-  font-weight:800;font-size:.82rem;color:#fff;flex-shrink:0;
-}
-.c-avatar.presente{background:var(--green);}
-.c-avatar.ausente{background:var(--red-dim);color:var(--red);}
-.c-info{flex:1;}
-.c-nome{font-weight:700;font-size:.9rem;color:var(--text-bright);}
-.c-status{font-size:.74rem;color:var(--text-dim);margin-top:3px;}
-.c-hora{font-family:var(--mono);font-size:.85rem;font-weight:700;color:var(--cyan);}
-.alerta-section{margin-top:24px;}
-.alerta-title{font-size:.78rem;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;display:flex;align-items:center;gap:6px;}
-.alerta-item{
-  background:var(--red-dim);border:1px solid rgba(239,68,68,.2);
-  border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:8px;
-  display:flex;align-items:center;gap:12px;
-}
-.a-icon{font-size:1.2rem;flex-shrink:0;}
-.a-text{font-size:.84rem;color:var(--text-bright);flex:1;}
-.a-time{font-size:.74rem;color:var(--text-dim);font-family:var(--mono);}
-
-/* Relatório */
-.rel-card{
-  background:var(--panel);border:1px solid var(--glass-border);
-  border-radius:var(--radius);padding:20px;margin-bottom:14px;
-}
-.rel-nome{font-size:1.05rem;font-weight:700;color:var(--text-bright);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--glass-border);}
-.rel-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px;}
-.rel-item{text-align:center;padding:8px 4px;background:var(--navy-light);border-radius:var(--radius-xs);}
-.ri-val{font-size:1.1rem;font-weight:800;font-family:var(--mono);color:var(--cyan);}
-.ri-lbl{font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-top:4px;letter-spacing:.3px;}
-
-/* ══════════════════════════════════════════
-   SUCCESS OVERLAY
-   ══════════════════════════════════════════ */
-.success-overlay{
-  display:none;position:fixed;inset:0;z-index:8000;
-  background:rgba(5,13,24,.92);backdrop-filter:blur(12px);
-  align-items:center;justify-content:center;flex-direction:column;gap:16px;
-}
-.success-overlay.show{display:flex;}
-.success-icon{font-size:4rem;animation:popIn .4s ease;}
-@keyframes popIn{from{transform:scale(0);}to{transform:scale(1);}}
-.success-msg{font-size:1.15rem;font-weight:700;color:var(--text-bright);text-align:center;}
-.success-detail{font-size:.88rem;color:var(--text-dim);text-align:center;font-family:var(--mono);}
-
-/* Toast */
-.toast{
-  position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(80px);
-  background:var(--panel-solid);border:1px solid var(--glass-border);
-  border-radius:var(--radius-sm);padding:12px 24px;
-  color:var(--text-bright);font-size:.85rem;font-weight:600;
-  z-index:11000;opacity:0;transition:all .4s ease;pointer-events:none;
-}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-
-/* Responsive */
-@media(max-width:400px){
-  .stats-grid{grid-template-columns:repeat(2,1fr);}
-  .type-grid{grid-template-columns:repeat(2,1fr);}
-  .painel-stats{grid-template-columns:1fr 1fr;}
-  .container{padding:20px 12px 30px;}
-  .top-bar{padding:14px 14px;}
-}
-</style>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="bg-scene"><div class="orb"></div><div class="orb"></div><div class="orb"></div></div>
+<!-- BG Scene -->
+<div class="bg-scene">
+  <div class="orb"></div>
+  <div class="orb"></div>
+  <div class="orb"></div>
+</div>
 
-<!-- ══════ LOGIN ══════ -->
+<!-- ══════════════ LOGIN ══════════════ -->
 <div id="loginScreen">
   <div class="login-card">
     <div class="brand-icon">⏱</div>
@@ -443,14 +42,14 @@ select.login-field{
   </div>
 </div>
 
-<!-- ══════ LOADING ══════ -->
+<!-- ══════════════ LOADING ══════════════ -->
 <div id="ldScreen" class="hidden">
   <div class="ld-spinner"></div>
   <div class="ld-text" id="ldText">Conectando...</div>
 </div>
 <div id="ldBarTop"></div>
 
-<!-- ══════ MAIN APP ══════ -->
+<!-- ══════════════ MAIN APP ══════════════ -->
 <div id="mainApp" style="display:none;">
 
   <!-- Top Bar -->
@@ -505,11 +104,17 @@ select.login-field{
       <div class="gestor-btns">
         <button class="gestor-btn" onclick="abrirPainel()">
           <div class="g-icon">📡</div>
-          <div class="g-text"><span>Painel Tempo Real</span><span>Veja quem está presente agora</span></div>
+          <div class="g-text">
+            <span>Painel Tempo Real</span>
+            <span>Veja quem está presente agora</span>
+          </div>
         </button>
         <button class="gestor-btn" onclick="abrirRelatorio()">
           <div class="g-icon">📊</div>
-          <div class="g-text"><span>Relatório de Horas</span><span>Resumo mensal dos colaboradores</span></div>
+          <div class="g-text">
+            <span>Relatório de Horas</span>
+            <span>Resumo mensal dos colaboradores</span>
+          </div>
         </button>
       </div>
     </div>
@@ -543,10 +148,18 @@ select.login-field{
     <div class="type-card">
       <div class="type-title">Tipo de Registro</div>
       <div class="type-grid">
-        <button class="type-btn" onclick="selectType(this,'ENTRADA')"><span class="type-icon">🟢</span>Entrada</button>
-        <button class="type-btn" onclick="selectType(this,'SAÍDA ALMOÇO')"><span class="type-icon">🍽️</span>Saída Almoço</button>
-        <button class="type-btn" onclick="selectType(this,'RETORNO ALMOÇO')"><span class="type-icon">🔄</span>Retorno Almoço</button>
-        <button class="type-btn" onclick="selectType(this,'SAÍDA')"><span class="type-icon">🔴</span>Saída</button>
+        <button class="type-btn" onclick="selectType(this,'ENTRADA')">
+          <span class="type-icon">🟢</span>Entrada
+        </button>
+        <button class="type-btn" onclick="selectType(this,'SAÍDA ALMOÇO')">
+          <span class="type-icon">🍽️</span>Saída Almoço
+        </button>
+        <button class="type-btn" onclick="selectType(this,'RETORNO ALMOÇO')">
+          <span class="type-icon">🔄</span>Retorno Almoço
+        </button>
+        <button class="type-btn" onclick="selectType(this,'SAÍDA')">
+          <span class="type-icon">🔴</span>Saída
+        </button>
       </div>
     </div>
 
@@ -556,13 +169,15 @@ select.login-field{
     <!-- Timeline -->
     <div class="timeline-card">
       <div class="tl-title">Registros de Hoje</div>
-      <div id="timelineList"><p style="color:var(--text-dim);font-size:.82rem;">Carregando...</p></div>
+      <div id="timelineList">
+        <p style="color:var(--text-dim);font-size:.82rem;">Carregando...</p>
+      </div>
     </div>
 
-  </div>
-</div>
+  </div><!-- /container -->
+</div><!-- /mainApp -->
 
-<!-- ══════ PAINEL MODAL ══════ -->
+<!-- ══════════════ PAINEL TEMPO REAL ══════════════ -->
 <div class="modal-full" id="painelModal">
   <div class="modal-bar">
     <h2>📡 Painel Tempo Real</h2>
@@ -571,7 +186,7 @@ select.login-field{
   <div class="modal-body" id="painelBody"></div>
 </div>
 
-<!-- ══════ RELATÓRIO MODAL ══════ -->
+<!-- ══════════════ RELATÓRIO ══════════════ -->
 <div class="modal-full" id="relModal">
   <div class="modal-bar">
     <h2>📊 Relatório de Horas</h2>
@@ -580,7 +195,7 @@ select.login-field{
   <div class="modal-body" id="relBody"></div>
 </div>
 
-<!-- Success -->
+<!-- Success Overlay -->
 <div class="success-overlay" id="successOverlay">
   <div class="success-icon" id="successIcon">✅</div>
   <div class="success-msg" id="successMsg">Ponto registrado!</div>
@@ -590,241 +205,7 @@ select.login-field{
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
-<!-- ══════════════════════════════════════════
-     JAVASCRIPT v5.1
-     ══════════════════════════════════════════ -->
-<script>
-var API_URL='https://script.google.com/macros/s/AKfycbzXuhmVkTDsMGotRuG3-i-YYnx0_nLFWDWjb7hNsTZ2HUg5SzWKDK6jbad_HqOEsnxt/exec';
-var SESSION_KEY='cv_ponto_sessao';
-var RAIO_LIMITE=50;
-var LAT_EMPRESA=-14.842472;
-var LNG_EMPRESA=-39.987250;
-var CREDS_OFFLINE={'LUCAS':'Lucas@CRV2026','TASSIO':'Tassio@CRV2026','AMARAL':'Amaral@CRV2026','ALEX':'Alex@CRV2026','ALEF':'GP.Carlos2026'};
-
-var sessao=null,tipoSelecionado='',selfieData='',geoAtual={lat:0,lng:0,dist:null,dentro:false},refreshInterval=null;
-
-// ── Init ──
-(function(){
-  var s=localStorage.getItem(SESSION_KEY);
-  if(s){try{sessao=JSON.parse(s);if(sessao&&sessao.nome){esconderLogin();iniciarApp();return;}}catch(e){}}
-})();
-
-// ── Login ──
-function fazerLogin(){
-  var user=document.getElementById('loginUser').value.trim();
-  var pass=document.getElementById('loginPass').value.trim();
-  var err=document.getElementById('loginError');
-  var btn=document.getElementById('loginBtn');
-  err.textContent='';
-  if(!user||!pass){err.textContent='Preencha todos os campos';shakeLogin();return;}
-  btn.disabled=true;btn.textContent='Verificando...';
-  fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({acao:'login',usuario:user,senha:pass}),redirect:'follow'})
-  .then(function(r){return r.json();})
-  .then(function(d){
-    if(d.status==='ok'){sessao={nome:d.nome,nivel:d.nivel,senha:pass};localStorage.setItem(SESSION_KEY,JSON.stringify(sessao));esconderLogin();iniciarApp();}
-    else{err.textContent=d.msg||'Credenciais inválidas';shakeLogin();}
-  })
-  .catch(function(){
-    if(CREDS_OFFLINE[user]&&CREDS_OFFLINE[user]===pass){sessao={nome:user,nivel:user==='ALEF'?'gestor':'funcionario',senha:pass};localStorage.setItem(SESSION_KEY,JSON.stringify(sessao));esconderLogin();iniciarApp();}
-    else{err.textContent='Sem conexão e credenciais inválidas';shakeLogin();}
-  })
-  .finally(function(){btn.disabled=false;btn.textContent='Entrar';});
-}
-function shakeLogin(){var c=document.querySelector('.login-card');c.classList.add('shake');setTimeout(function(){c.classList.remove('shake');},500);}
-function esconderLogin(){document.getElementById('loginScreen').classList.add('hidden');}
-function logout(){
-  sessao=null;localStorage.removeItem(SESSION_KEY);
-  if(refreshInterval)clearInterval(refreshInterval);
-  stopCamera();
-  document.getElementById('mainApp').style.display='none';
-  document.getElementById('loginScreen').classList.remove('hidden');
-  document.getElementById('loginUser').value='';
-  document.getElementById('loginPass').value='';
-  document.getElementById('loginError').textContent='';
-}
-document.addEventListener('DOMContentLoaded',function(){document.getElementById('loginPass').addEventListener('keydown',function(e){if(e.key==='Enter')fazerLogin();});});
-
-// ── App Init ──
-function iniciarApp(){
-  document.getElementById('ldScreen').classList.remove('hidden');
-  document.getElementById('mainApp').style.display='block';
-  document.getElementById('userBadge').textContent=sessao.nome;
-  var isGestor=sessao.nivel==='gestor';
-  if(isGestor){
-    document.getElementById('badgeGestor').style.display='';
-    document.getElementById('gestorSection').classList.add('show');
-    document.getElementById('cardPresentes').style.display='';
-    document.getElementById('cardAlertas').style.display='';
-  }
-  loadSequence([{t:'Autenticando...',p:20},{t:'Iniciando câmera...',p:50},{t:'Buscando GPS...',p:80},{t:'Pronto!',p:100}],function(){
-    document.getElementById('ldScreen').classList.add('hidden');
-    initCamera();initGeo();syncDados();
-    refreshInterval=setInterval(function(){syncDados();if(isGestor)syncGestor();},300000);
-    if(isGestor)syncGestor();
-  });
-}
-function loadSequence(steps,cb){var i=0;function next(){if(i>=steps.length){setTimeout(cb,400);return;}document.getElementById('ldText').textContent=steps[i].t;document.getElementById('ldBarTop').style.width=steps[i].p+'%';i++;setTimeout(next,500);}next();}
-
-// ── Camera ──
-var stream=null;
-function initCamera(){
-  navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:480,height:480}})
-  .then(function(s){stream=s;document.getElementById('videoEl').srcObject=s;})
-  .catch(function(){toast('Câmera não disponível');});
-}
-function capturePhoto(){
-  var v=document.getElementById('videoEl'),c=document.getElementById('canvasEl');
-  c.width=480;c.height=480;c.getContext('2d').drawImage(v,0,0,480,480);
-  selfieData=c.toDataURL('image/jpeg',0.7);
-  v.style.display='none';c.style.display='block';
-  document.getElementById('btnCapture').style.display='none';
-  document.getElementById('btnReset').style.display='';
-  document.getElementById('selfieOk').style.display='block';
-  checkSubmit();
-}
-function resetCamera(){
-  document.getElementById('videoEl').style.display='block';
-  document.getElementById('canvasEl').style.display='none';
-  document.getElementById('btnCapture').style.display='';
-  document.getElementById('btnReset').style.display='none';
-  document.getElementById('selfieOk').style.display='none';
-  selfieData='';checkSubmit();
-}
-function stopCamera(){if(stream){stream.getTracks().forEach(function(t){t.stop();});stream=null;}}
-
-// ── Geo ──
-function initGeo(){
-  if(!navigator.geolocation){updateGeoUI('Indisponível','buscando','');return;}
-  navigator.geolocation.watchPosition(function(pos){
-    geoAtual.lat=pos.coords.latitude;geoAtual.lng=pos.coords.longitude;
-    geoAtual.dist=haversine(geoAtual.lat,geoAtual.lng,LAT_EMPRESA,LNG_EMPRESA);
-    geoAtual.dentro=geoAtual.dist<=RAIO_LIMITE;
-    updateGeoUI(geoAtual.dentro?'Dentro do raio':'Fora do raio permitido',geoAtual.dentro?'ok':'fora','Distância: '+Math.round(geoAtual.dist)+' m (limite: '+RAIO_LIMITE+' m)');
-    checkSubmit();
-  },function(){updateGeoUI('GPS negado','fora','');},{enableHighAccuracy:true,maximumAge:10000});
-}
-function updateGeoUI(txt,cls,dist){
-  document.getElementById('geoIndicator').className='geo-indicator '+cls;
-  document.getElementById('geoValue').textContent=txt;
-  document.getElementById('geoDist').textContent=dist;
-}
-function haversine(lat1,lon1,lat2,lon2){var R=6371000,dLat=(lat2-lat1)*Math.PI/180,dLon=(lon2-lon1)*Math.PI/180;var a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
-
-// ── Type ──
-function selectType(el,tipo){document.querySelectorAll('.type-btn').forEach(function(b){b.classList.remove('selected');});el.classList.add('selected');tipoSelecionado=tipo;checkSubmit();}
-function checkSubmit(){
-  var isGestor=sessao&&sessao.nivel==='gestor';
-  var geoOk=isGestor?true:geoAtual.dentro;
-  document.getElementById('submitBtn').disabled=!(selfieData&&tipoSelecionado&&geoOk);
-}
-
-// ── Registrar Ponto ──
-function registrarPonto(){
-  var btn=document.getElementById('submitBtn');btn.disabled=true;btn.textContent='Enviando...';
-  fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({nome:sessao.nome,tipo:tipoSelecionado,selfie:selfieData,lat:geoAtual.lat,lng:geoAtual.lng,dispositivo:navigator.userAgent.substring(0,60),ip:''}),redirect:'follow'})
-  .then(function(r){return r.json();})
-  .then(function(d){if(d.status==='ok'){showSuccess(d);incrementSession();resetAfterSubmit();syncDados();}else{toast(d.msg||'Erro');}})
-  .catch(function(){toast('Sem conexão');})
-  .finally(function(){btn.disabled=false;btn.textContent='Registrar Ponto';});
-}
-function showSuccess(d){
-  document.getElementById('successIcon').textContent=d.dentroDoRaio?'✅':'⚠️';
-  document.getElementById('successMsg').textContent=d.mensagem||'Ponto registrado!';
-  document.getElementById('successDetail').textContent=d.hora+' • '+Math.round(d.distancia)+'m • '+d.statusGeo;
-  var ov=document.getElementById('successOverlay');ov.classList.add('show');setTimeout(function(){ov.classList.remove('show');},3000);
-}
-function resetAfterSubmit(){resetCamera();tipoSelecionado='';document.querySelectorAll('.type-btn').forEach(function(b){b.classList.remove('selected');});checkSubmit();}
-function incrementSession(){var key='p_'+sessao.nome+'_sc';var c=parseInt(localStorage.getItem(key)||'0');localStorage.setItem(key,c+1);}
-
-// ── Sync ──
-function syncDados(){
-  fetch(API_URL+'?sync=1').then(function(r){return r.json();})
-  .then(function(d){
-    document.getElementById('statHoje').textContent=d.hoje||0;
-    document.getElementById('statMes').textContent=d.mes||0;
-    setBadge(true);if(d.timeline)renderTimeline(d.timeline);
-  }).catch(function(){setBadge(false);});
-}
-function syncGestor(){
-  fetch(API_URL+'?painel=1&senha='+encodeURIComponent(sessao.senha))
-  .then(function(r){return r.json();})
-  .then(function(d){
-    if(d.erro)return;
-    document.getElementById('statPresentes').textContent=d.presentes||0;
-    document.getElementById('statAlertas').textContent=(d.alertas?d.alertas.length:0);
-  }).catch(function(){});
-}
-function setBadge(on){var b=document.getElementById('badgeStatus');b.textContent=on?'Online':'Offline';b.className='badge '+(on?'badge-online':'badge-offline');}
-function renderTimeline(items){
-  var el=document.getElementById('timelineList');
-  if(!items||items.length===0){el.innerHTML='<p style="color:var(--text-dim);font-size:.82rem;">Nenhum registro hoje</p>';return;}
-  var html='';items.forEach(function(it){
-    var cls='tl-'+it.tipo.replace(/\s/g,'_');
-    html+='<div class="timeline-item"><span class="tl-hora">'+it.hora+'</span><span class="tl-nome">'+it.nome+'</span><span class="tl-tipo '+cls+'">'+it.tipo+'</span></div>';
-  });el.innerHTML=html;
-}
-
-// ── Painel Tempo Real ──
-function abrirPainel(){document.getElementById('painelModal').classList.add('show');carregarPainel();}
-function fecharPainel(){document.getElementById('painelModal').classList.remove('show');}
-function carregarPainel(){
-  var body=document.getElementById('painelBody');
-  body.innerHTML='<div style="text-align:center;padding:40px;"><div class="ld-spinner" style="margin:0 auto;"></div><p style="color:var(--text-dim);margin-top:12px;">Carregando...</p></div>';
-  fetch(API_URL+'?painel=1&senha='+encodeURIComponent(sessao.senha))
-  .then(function(r){return r.json();})
-  .then(function(d){if(d.erro){body.innerHTML='<p style="color:var(--red);padding:20px;">'+d.erro+'</p>';return;}renderPainel(d);})
-  .catch(function(){body.innerHTML='<p style="color:var(--red);padding:20px;">Erro de conexão</p>';});
-}
-function renderPainel(d){
-  var h='<div class="painel-stats">';
-  h+='<div class="p-stat"><div class="p-val green">'+d.presentes+'</div><div class="p-lbl">Presentes</div></div>';
-  h+='<div class="p-stat"><div class="p-val red">'+d.ausentes+'</div><div class="p-lbl">Ausentes</div></div>';
-  h+='<div class="p-stat"><div class="p-val cyan">'+d.totalFuncionarios+'</div><div class="p-lbl">Total</div></div>';
-  h+='</div>';
-  var nomes=Object.keys(d.colaboradores);
-  nomes.forEach(function(n){
-    var c=d.colaboradores[n];var pres=!!c.entrada;
-    var st=c.saida?'Saiu '+c.saida:c.retornoAlmoco?'Retornou '+c.retornoAlmoco:c.saidaAlmoco?'Almoço desde '+c.saidaAlmoco:c.entrada?'Entrou '+c.entrada:'Não registrou';
-    h+='<div class="colab-card"><div class="c-avatar '+(pres?'presente':'ausente')+'">'+n.substring(0,2)+'</div><div class="c-info"><div class="c-nome">'+n+'</div><div class="c-status">'+st+'</div></div><div class="c-hora">'+(c.entrada||'—')+'</div></div>';
-  });
-  if(d.alertas&&d.alertas.length>0){
-    h+='<div class="alerta-section"><div class="alerta-title">⚠️ Alertas — Fora do Raio</div>';
-    d.alertas.forEach(function(a){h+='<div class="alerta-item"><span class="a-icon">⚠️</span><span class="a-text">'+a.nome+' — '+a.tipo+' ('+a.distancia+'m)</span><span class="a-time">'+a.hora+'</span></div>';});
-    h+='</div>';
-  }
-  h+='<p style="text-align:center;color:var(--text-dim);font-size:.72rem;margin-top:20px;">'+d.data+' '+d.timestamp+'</p>';
-  document.getElementById('painelBody').innerHTML=h;
-}
-
-// ── Relatório ──
-function abrirRelatorio(){document.getElementById('relModal').classList.add('show');carregarRelatorio();}
-function fecharRelatorio(){document.getElementById('relModal').classList.remove('show');}
-function carregarRelatorio(){
-  var body=document.getElementById('relBody');
-  body.innerHTML='<div style="text-align:center;padding:40px;"><div class="ld-spinner" style="margin:0 auto;"></div><p style="color:var(--text-dim);margin-top:12px;">Carregando...</p></div>';
-  fetch(API_URL+'?relatorio=1&senha='+encodeURIComponent(sessao.senha))
-  .then(function(r){return r.json();})
-  .then(function(d){if(d.erro){body.innerHTML='<p style="color:var(--red);padding:20px;">'+d.erro+'</p>';return;}renderRelatorio(d);})
-  .catch(function(){body.innerHTML='<p style="color:var(--red);padding:20px;">Erro de conexão</p>';});
-}
-function renderRelatorio(d){
-  var h='<p style="color:var(--text-dim);font-size:.82rem;margin-bottom:20px;">Mês: '+d.mes+' • Jornada: '+d.jornada+' • Gerado: '+d.geradoEm+'</p>';
-  d.colaboradores.forEach(function(c){
-    h+='<div class="rel-card"><div class="rel-nome">'+c.nome+'</div><div class="rel-grid">';
-    h+='<div class="rel-item"><div class="ri-val">'+c.diasTrabalhados+'</div><div class="ri-lbl">Dias Trab.</div></div>';
-    h+='<div class="rel-item"><div class="ri-val">'+c.diasCompletos+'</div><div class="ri-lbl">Completos</div></div>';
-    h+='<div class="rel-item"><div class="ri-val">'+c.horasTotais+'</div><div class="ri-lbl">Horas</div></div>';
-    h+='<div class="rel-item"><div class="ri-val" style="color:var(--green);">'+c.horasExtras+'</div><div class="ri-lbl">Extras</div></div>';
-    h+='<div class="rel-item"><div class="ri-val" style="color:var(--red);">'+c.deficit+'</div><div class="ri-lbl">Déficit</div></div>';
-    h+='<div class="rel-item"><div class="ri-val" style="color:var(--amber);">'+c.atrasoTotal+'</div><div class="ri-lbl">Atrasos</div></div>';
-    h+='<div class="rel-item"><div class="ri-val">'+c.mediaPorDia+'</div><div class="ri-lbl">Média/Dia</div></div>';
-    h+='</div></div>';
-  });
-  document.getElementById('relBody').innerHTML=h;
-}
-
-// ── Toast ──
-function toast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},3000);}
-</script>
+<!-- JavaScript -->
+<script src="app.js"></script>
 </body>
 </html>
