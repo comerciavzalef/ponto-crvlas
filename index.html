@@ -76,13 +76,18 @@
 
   <div class="container">
 
-    <div class="gestor-section" id="gestorSection">
+   <div class="gestor-section" id="gestorSection">
       <div class="section-label">Monitoramento em Tempo Real</div>
-      <div class="stats-grid">
+      <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr); gap: 8px;">
         <div class="stat-card purple" onclick="abrirPainel()">
           <span class="s-icon">👥</span>
           <div class="s-label">Presentes</div>
           <div class="s-value purple" id="statPresentes">0</div>
+        </div>
+        <div class="stat-card blue" onclick="abrirPainel()">
+          <span class="s-icon">🚗</span>
+          <div class="s-label">Viagem</div>
+          <div class="s-value blue" id="statViagem">0</div>
         </div>
         <div class="stat-card red" onclick="abrirPainel()">
           <span class="s-icon">⚠️</span>
