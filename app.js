@@ -3,7 +3,7 @@
 //  Grupo Carlos Vaz — CRV/LAS
 // ══════════════════════════════════════════════════════════════
 
-var API_URL = 'https://script.google.com/macros/s/SUA_NOVA_URL_AQUI/exec';
+var API_URL = 'https://script.google.com/macros/s/AKfycbzw_DCKo-0c3EMxWHgajCs8FxVYxtghYXSerldjBaTSu5lKsKqUYr5-vOLTYOuYsUFRUg/exec';
 var SESSION_KEY = 'cv_ponto_sessao';
 var RAIO_LIMITE = 50; 
 var LAT_EMPRESA = -14.842472;
