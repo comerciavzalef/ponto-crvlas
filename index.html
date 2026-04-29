@@ -36,10 +36,15 @@
       <option value="ALEX">Alex</option>
       <option value="ALEF">Alef (Gestor)</option>
     </select>
-    <input type="password" id="loginPass" class="login-field" placeholder="Sua senha" autocomplete="off">
-    <button class="login-btn" id="loginBtn" onclick="fazerLogin()">Entrar</button>
-    <div class="login-error" id="loginError"></div>
-  </div>
+    <div style="position:relative;">
+  <input type="password" id="loginPass" class="login-field" placeholder="Sua senha" autocomplete="off" style="padding-right:48px;">
+  <button type="button" onclick="toggleSenha()" style="
+    position:absolute; right:12px; top:50%; transform:translateY(-50%);
+    background:none; border:none; cursor:pointer; font-size:1.1rem;
+    color:var(--text-dim); padding:4px; transition:all .3s ease;
+  " id="eyeBtn"><span id="eyeIcon">👁️</span></button>
+</div>
+
 </div>
 
 <!-- ══════════════ LOADING ══════════════ -->
