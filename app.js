@@ -5,7 +5,7 @@
 // ══════════════════════════════════════════════════════════════
 
 // ── Config ───────────────────────────────────────────────────
-var API_URL = 'https://script.google.com/macros/s/AKfycbzXuhmVkTDsMGotRuG3-i-YYnx0_nLFWDWjb7hNsTZ2HUg5SzWKDK6jbad_HqOEsnxt/exec';
+var API_URL = 'var API_URL = 'https://script.google.com/macros/s/AKfycbzVJbAce4QVhOoyQz6j1iiBmW8OxdkC57P5qx64W1GFuylAZ9k6UvpcbDKGoKfugQWQeA/exec';';
 var SESSION_KEY = 'cv_ponto_sessao';
 var RAIO_LIMITE = 50;
 var LAT_EMPRESA = -14.842472;
