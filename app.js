@@ -301,19 +301,26 @@ function syncGestor() {
     .then(function (r) { return r.json(); })
     .then(function (d) {
       if (d.erro) return;
+      
       document.getElementById('statPresentes').textContent = d.presentes || 0;
       document.getElementById('statAlertas').textContent = (d.alertas ? d.alertas.length : 0);
 
-      // ALERTA PROATIVO DE VIAGEM PARA O GESTOR
-      if (!avisoViagemFeito) {
-        var emViagem = [];
-        var nomes = Object.keys(d.colaboradores);
-        nomes.forEach(function(n) {
-          if (d.colaboradores[n].registros.some(r => r.statusGeo.indexOf('VIAGEM') > -1)) {
-            emViagem.push(n);
-          }
-        });
-        if (emViagem.length > 0) { toast("📍 Atenção: " + emViagem.join(", ") + " em viagem hoje."); }
+      // LÓGICA DO NOVO CARD: Contar quem está em viagem
+      var emViagem = [];
+      var nomes = Object.keys(d.colaboradores);
+      nomes.forEach(function(n) {
+        // Varre os registros do dia procurando a tag VIAGEM
+        if (d.colaboradores[n].registros.some(r => r.statusGeo.indexOf('VIAGEM') > -1)) {
+          emViagem.push(n);
+        }
+      });
+      
+      // Atualiza o número no card azul
+      document.getElementById('statViagem').textContent = emViagem.length;
+
+      // ALERTA PROATIVO (Toast) na tela assim que logar
+      if (!avisoViagemFeito && emViagem.length > 0) { 
+        toast("📍 Atenção: " + emViagem.join(", ") + " na estrada hoje."); 
         avisoViagemFeito = true; 
       }
     }).catch(function () { });
