@@ -76,25 +76,29 @@
 
   <div class="container">
 
-   <div class="gestor-section" id="gestorSection">
+    <div class="gestor-section" id="gestorSection">
       <div class="section-label">Monitoramento em Tempo Real</div>
+      
       <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr); gap: 8px;">
         <div class="stat-card purple" onclick="abrirPainel()">
           <span class="s-icon">👥</span>
           <div class="s-label">Presentes</div>
           <div class="s-value purple" id="statPresentes">0</div>
         </div>
+        
         <div class="stat-card blue" onclick="abrirPainel()">
           <span class="s-icon">🚗</span>
           <div class="s-label">Viagem</div>
           <div class="s-value blue" id="statViagem">0</div>
         </div>
+        
         <div class="stat-card red" onclick="abrirPainel()">
           <span class="s-icon">⚠️</span>
           <div class="s-label">Alertas</div>
           <div class="s-value red" id="statAlertas">0</div>
         </div>
       </div>
+
       <div class="gestor-btns">
         <button class="gestor-btn" onclick="abrirRelatorio()">
           <div class="g-icon">📊</div>
@@ -105,83 +109,85 @@
         </button>
       </div>
     </div>
+    <div id="areaOperacional">
 
-    <div class="section-label">Meu Desempenho (Mês)</div>
-    <div class="stats-grid">
-      <div class="stat-card cyan">
-        <span class="s-icon">📋</span>
-        <div class="s-label">Registros Hoje</div>
-        <div class="s-value cyan" id="statHoje">0</div>
-      </div>
-      <div class="stat-card green">
-        <span class="s-icon">📈</span>
-        <div class="s-label">Total do Mês</div>
-        <div class="s-value green" id="statMes">0</div>
-      </div>
-    </div>
-
-    <div class="section-label">Validação de Local</div>
-    <div class="geo-card">
-      <div class="geo-indicator buscando" id="geoIndicator">📍</div>
-      <div class="geo-info">
-        <div class="geo-label">Geolocalização</div>
-        <div class="geo-value" id="geoValue">Localizando dispositivo...</div>
-        <div class="geo-dist" id="geoDist"></div>
-      </div>
-    </div>
-
-    <div class="travel-mode-card" id="travelCard">
-      <div class="travel-header">
-        <div class="travel-title">
-          <span class="t-icon">🚗</span>
-          <div class="t-text">
-            <span>Modo Viagem</span>
-            <span>Ative se estiver fora da rota padrão</span>
-          </div>
+      <div class="section-label">Meu Desempenho (Mês)</div>
+      <div class="stats-grid">
+        <div class="stat-card cyan">
+          <span class="s-icon">📋</span>
+          <div class="s-label">Registros Hoje</div>
+          <div class="s-value cyan" id="statHoje">0</div>
         </div>
-        <label class="ios-switch">
-          <input type="checkbox" id="viagemCheck" onchange="toggleViagem()">
-          <span class="slider"></span>
-        </label>
+        <div class="stat-card green">
+          <span class="s-icon">📈</span>
+          <div class="s-label">Total do Mês</div>
+          <div class="s-value green" id="statMes">0</div>
+        </div>
       </div>
-      <div id="viagemDestinoContainer" class="viagem-input-wrap hidden">
-        <input type="text" id="viagemDestino" placeholder="Cidade ou Cliente (ex: Floresta Azul)" class="viagem-field">
+
+      <div class="section-label">Validação de Local</div>
+      <div class="geo-card">
+        <div class="geo-indicator buscando" id="geoIndicator">📍</div>
+        <div class="geo-info">
+          <div class="geo-label">Geolocalização</div>
+          <div class="geo-value" id="geoValue">Localizando dispositivo...</div>
+          <div class="geo-dist" id="geoDist"></div>
+        </div>
       </div>
+
+      <div class="travel-mode-card" id="travelCard">
+        <div class="travel-header">
+          <div class="travel-title">
+            <span class="t-icon">🚗</span>
+            <div class="t-text">
+              <span>Modo Viagem</span>
+              <span>Ative se estiver fora da rota padrão</span>
+            </div>
+          </div>
+          <label class="ios-switch">
+            <input type="checkbox" id="viagemCheck" onchange="toggleViagem()">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div id="viagemDestinoContainer" class="viagem-input-wrap hidden">
+          <input type="text" id="viagemDestino" placeholder="Cidade ou Cliente (ex: Floresta Azul)" class="viagem-field">
+        </div>
+      </div>
+
+      <div class="section-label">Identificação Visual</div>
+      <div class="camera-card">
+        <div class="video-wrap">
+          <video id="videoEl" autoplay playsinline></video>
+          <canvas id="canvasEl"></canvas>
+        </div>
+        <div class="cam-actions">
+          <button class="cam-btn primary" id="btnCapture" onclick="capturePhoto()">📸 Capturar Foto</button>
+          <button class="cam-btn" id="btnReset" onclick="resetCamera()" style="display:none;">🔄 Refazer</button>
+        </div>
+        <div class="selfie-ok" id="selfieOk">✅ Identidade Confirmada</div>
+      </div>
+
+      <div class="section-label">Ponto Digital</div>
+      <div class="type-card">
+        <div class="type-grid">
+          <button class="type-btn" onclick="selectType(this,'ENTRADA')">
+            <span class="type-icon">🟢</span>Entrada
+          </button>
+          <button class="type-btn" onclick="selectType(this,'SAÍDA ALMOÇO')">
+            <span class="type-icon">🍽️</span>S. Almoço
+          </button>
+          <button class="type-btn" onclick="selectType(this,'RETORNO ALMOÇO')">
+            <span class="type-icon">🔄</span>R. Almoço
+          </button>
+          <button class="type-btn" onclick="selectType(this,'SAÍDA')">
+            <span class="type-icon">🔴</span>Saída
+          </button>
+        </div>
+      </div>
+
+      <button class="submit-btn" id="submitBtn" onclick="registrarPonto()" disabled>Confirmar Registro</button>
+
     </div>
-
-    <div class="section-label">Identificação Visual</div>
-    <div class="camera-card">
-      <div class="video-wrap">
-        <video id="videoEl" autoplay playsinline></video>
-        <canvas id="canvasEl"></canvas>
-      </div>
-      <div class="cam-actions">
-        <button class="cam-btn primary" id="btnCapture" onclick="capturePhoto()">📸 Capturar Foto</button>
-        <button class="cam-btn" id="btnReset" onclick="resetCamera()" style="display:none;">🔄 Refazer</button>
-      </div>
-      <div class="selfie-ok" id="selfieOk">✅ Identidade Confirmada</div>
-    </div>
-
-    <div class="section-label">Ponto Digital</div>
-    <div class="type-card">
-      <div class="type-grid">
-        <button class="type-btn" onclick="selectType(this,'ENTRADA')">
-          <span class="type-icon">🟢</span>Entrada
-        </button>
-        <button class="type-btn" onclick="selectType(this,'SAÍDA ALMOÇO')">
-          <span class="type-icon">🍽️</span>S. Almoço
-        </button>
-        <button class="type-btn" onclick="selectType(this,'RETORNO ALMOÇO')">
-          <span class="type-icon">🔄</span>R. Almoço
-        </button>
-        <button class="type-btn" onclick="selectType(this,'SAÍDA')">
-          <span class="type-icon">🔴</span>Saída
-        </button>
-      </div>
-    </div>
-
-    <button class="submit-btn" id="submitBtn" onclick="registrarPonto()" disabled>Confirmar Registro</button>
-
     <div class="timeline-card">
       <div class="tl-title">Últimas Atividades</div>
       <div id="timelineList">
