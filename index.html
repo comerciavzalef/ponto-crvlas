@@ -220,6 +220,27 @@ select.field-input{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:/
 .rel-btn:active{transform:scale(.97)}
 .rel-btn.loading{opacity:.6;pointer-events:none}
 
+/* ═══ MODAL SENHA ═══ */
+.pwd-modal{position:fixed;inset:0;z-index:9700;background:rgba(5,13,24,.92);display:none;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(20px)}
+.pwd-modal.show{display:flex}
+.pwd-box{background:var(--navy-light);border:1px solid rgba(139,92,246,.3);border-radius:var(--radius-lg);padding:32px 24px;max-width:340px;width:100%;text-align:center;position:relative;overflow:hidden}
+.pwd-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent-purple),var(--accent-cyan))}
+.pwd-icon{font-size:2.5rem;margin-bottom:12px}
+.pwd-title{font-size:1rem;font-weight:800;margin-bottom:4px;color:var(--text-primary)}
+.pwd-sub{font-size:.72rem;color:var(--text-muted);margin-bottom:20px;line-height:1.4}
+.pwd-input{width:100%;padding:14px 16px;border-radius:var(--radius-sm);background:var(--navy);border:1px solid var(--glass-border);color:var(--text-primary);font-family:var(--font);font-size:.9rem;font-weight:600;text-align:center;letter-spacing:2px;transition:all .3s;-webkit-appearance:none}
+.pwd-input:focus{outline:none;border-color:var(--accent-purple);box-shadow:0 0 0 3px rgba(139,92,246,.12)}
+.pwd-input.error{border-color:var(--accent-red);box-shadow:0 0 0 3px rgba(239,68,68,.12);animation:pwdShake .4s ease}
+@keyframes pwdShake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+.pwd-error-msg{font-size:.68rem;color:var(--accent-red);margin-top:8px;min-height:18px;font-weight:600}
+.pwd-actions{display:flex;gap:10px;margin-top:20px}
+.pwd-btn{flex:1;padding:13px;border-radius:var(--radius-sm);border:none;font-family:var(--font);font-size:.82rem;font-weight:700;cursor:pointer;transition:all .2s}
+.pwd-btn.cancel{background:rgba(255,255,255,.06);color:var(--text-secondary);border:1px solid var(--glass-border)}
+.pwd-btn.cancel:hover{background:rgba(255,255,255,.1)}
+.pwd-btn.confirm{background:linear-gradient(135deg,var(--accent-purple),var(--accent-blue));color:#fff}
+.pwd-btn.confirm:active{transform:scale(.97)}
+.pwd-btn.confirm:disabled{opacity:.5;cursor:not-allowed}
+
 /* ═══ MODAL RELATÓRIO ═══ */
 .rel-modal{position:fixed;inset:0;z-index:9600;background:rgba(5,13,24,.92);display:none;flex-direction:column;padding:0;backdrop-filter:blur(20px);overflow:hidden}
 .rel-modal.show{display:flex}
@@ -298,7 +319,7 @@ select.field-input{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:/
   </div>
 </div>
 
-<!-- ALERT MODAL -->
+<!-- ALERT MODAL (duplicado) -->
 <div class="alert-modal" id="alertModal">
   <div class="alert-box">
     <div class="alert-icon">⚠️</div>
@@ -307,6 +328,21 @@ select.field-input{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:/
     <div class="alert-actions">
       <button class="alert-btn cancel" onclick="fecharAlerta()">Cancelar</button>
       <button class="alert-btn confirm" onclick="confirmarRegistro()">Registrar Mesmo Assim</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SENHA -->
+<div class="pwd-modal" id="pwdModal">
+  <div class="pwd-box">
+    <div class="pwd-icon">🔐</div>
+    <div class="pwd-title">Acesso Restrito</div>
+    <div class="pwd-sub">O relatório de horas é exclusivo para gestores. Digite a senha para continuar.</div>
+    <input class="pwd-input" type="password" id="pwdInput" placeholder="••••••••••" maxlength="30" autocomplete="off" onkeydown="if(event.key==='Enter')validarSenha()">
+    <div class="pwd-error-msg" id="pwdError"></div>
+    <div class="pwd-actions">
+      <button class="pwd-btn cancel" onclick="fecharSenha()">Cancelar</button>
+      <button class="pwd-btn confirm" id="pwdBtnOk" onclick="validarSenha()">Acessar</button>
     </div>
   </div>
 </div>
@@ -424,7 +460,7 @@ select.field-input{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:/
 
   <!-- BOTÃO RELATÓRIO -->
   <button class="rel-btn" id="btnRelatorio" onclick="abrirRelatorio()">
-    📊 Relatório de Horas do Mês
+    🔐 Relatório de Horas do Mês
   </button>
 
 </div>
@@ -443,6 +479,10 @@ var API_URL='https://script.google.com/macros/s/AKfycbzVJbAce4QVhOoyQz6j1iiBmW8O
 var selfieBase64='',stream=null,tipoSelecionado='Entrada';
 var registrosHoje=0,registrosMes=0;
 var forcarRegistro=false;
+
+/* ═══ SENHA (camada 1 — front) ═══ */
+var SENHA_GESTOR='GP.Carlos2026';
+var senhaValidada='';
 
 /* ═══ GEO ═══ */
 var RAIO_LIMITE=50;
@@ -593,32 +633,87 @@ function syncComPlanilha(){
   }).catch(function(){});
 }
 
-/* ═══ RELATÓRIO DE HORAS ═══ */
+/* ═══ SENHA — CAMADA 1 (FRONT) ═══ */
 function abrirRelatorio(){
+  // Abre o modal de senha
+  document.getElementById('pwdInput').value='';
+  document.getElementById('pwdError').textContent='';
+  document.getElementById('pwdInput').classList.remove('error');
+  document.getElementById('pwdModal').classList.add('show');
+  setTimeout(function(){document.getElementById('pwdInput').focus()},200);
+}
+
+function fecharSenha(){
+  document.getElementById('pwdModal').classList.remove('show');
+  document.getElementById('pwdInput').value='';
+  document.getElementById('pwdError').textContent='';
+  document.getElementById('pwdInput').classList.remove('error');
+}
+
+function validarSenha(){
+  var input=document.getElementById('pwdInput');
+  var erro=document.getElementById('pwdError');
+  var senha=input.value.trim();
+
+  if(!senha){
+    input.classList.add('error');
+    erro.textContent='Digite a senha de acesso';
+    return;
+  }
+
+  // Camada 1: verifica no front
+  if(senha!==SENHA_GESTOR){
+    input.classList.add('error');
+    erro.textContent='Senha incorreta. Acesso negado.';
+    input.value='';
+    setTimeout(function(){input.focus()},300);
+    return;
+  }
+
+  // Senha correta no front → guarda e prossegue
+  senhaValidada=senha;
+  fecharSenha();
+  carregarRelatorio();
+}
+
+/* ═══ RELATÓRIO — CAMADA 2 (SERVIDOR) ═══ */
+function carregarRelatorio(){
   var btn=document.getElementById('btnRelatorio');
   btn.classList.add('loading');
   btn.innerHTML='⏳ Carregando relatório...';
 
   document.getElementById('relModal').classList.add('show');
   document.getElementById('relBody').innerHTML='<div class="rel-empty">⏳ Consultando planilha...</div>';
-  document.getElementById('relSub').textContent='Carregando...';
+  document.getElementById('relSub').textContent='Autenticando...';
 
-  fetch(API_URL+'?relatorio=1')
+  // Camada 2: envia senha para o servidor
+  fetch(API_URL+'?relatorio=1&senha='+encodeURIComponent(senhaValidada))
   .then(function(r){return r.json()})
   .then(function(data){
-    renderRelatorio(data);
     btn.classList.remove('loading');
-    btn.innerHTML='📊 Relatório de Horas do Mês';
+    btn.innerHTML='🔐 Relatório de Horas do Mês';
+
+    // Servidor rejeitou?
+    if(data.erro){
+      document.getElementById('relBody').innerHTML='<div class="rel-empty">🚫 '+data.erro+'</div>';
+      document.getElementById('relSub').textContent='Acesso negado';
+      senhaValidada='';
+      return;
+    }
+
+    renderRelatorio(data);
   })
   .catch(function(err){
     document.getElementById('relBody').innerHTML='<div class="rel-empty">❌ Erro ao carregar relatório. Verifique a conexão.</div>';
+    document.getElementById('relSub').textContent='Erro de conexão';
     btn.classList.remove('loading');
-    btn.innerHTML='📊 Relatório de Horas do Mês';
+    btn.innerHTML='🔐 Relatório de Horas do Mês';
   });
 }
 
 function fecharRelatorio(){
   document.getElementById('relModal').classList.remove('show');
+  senhaValidada='';
 }
 
 function renderRelatorio(data){
@@ -631,6 +726,7 @@ function renderRelatorio(data){
   html+='<span class="rel-meta-tag">📅 '+nomeMes+' '+partesMes[1]+'</span>';
   html+='<span class="rel-meta-tag">⏰ Jornada: '+data.jornada+'/dia</span>';
   html+='<span class="rel-meta-tag">👥 '+data.colaboradores.length+' colaboradores</span>';
+  html+='<span class="rel-meta-tag" style="background:rgba(16,185,129,.1);color:var(--accent-green);border-color:rgba(16,185,129,.2)">🔓 Autenticado</span>';
   html+='</div>';
 
   if(!data.colaboradores||data.colaboradores.length===0){
