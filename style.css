@@ -1392,6 +1392,7 @@ select.login-field {
 /* ══════════════════════════════════════════════════════════════
    PRINT — Keep dark app-style
    ══════════════════════════════════════════════════════════════ */
+
 @media print {
   * {
     -webkit-print-color-adjust: exact !important;
@@ -1402,3 +1403,4 @@ select.login-field {
   .camera-card, .type-card, .geo-card, .gestor-section { display: none !important; }
   .container { padding: 10px !important; max-width: 100% !important; }
 }
+
