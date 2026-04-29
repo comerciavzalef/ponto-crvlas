@@ -1,11 +1,10 @@
 // ══════════════════════════════════════════════════════════════
 //  PONTO DIGITAL — app.js v5.1
 //  Grupo Carlos Vaz — CRV/LAS
-//  Login · Câmera · GPS · Registro · Painel Gestor · Relatório
 // ══════════════════════════════════════════════════════════════
 
 // ── Config ───────────────────────────────────────────────────
-var API_URL = 'var API_URL = 'https://script.google.com/macros/s/AKfycbzw_DCKo-0c3EMxWHgajCs8FxVYxtghYXSerldjBaTSu5lKsKqUYr5-vOLTYOuYsUFRUg/exec';
+var API_URL = 'https://script.google.com/macros/s/AKfycbzVJbAce4QVhOoyQz6j1iiBmW8OxdkC57P5qx64W1GFuylAZ9k6UvpcbDKGoKfugQWQeA/exec';
 var SESSION_KEY = 'cv_ponto_sessao';
 var RAIO_LIMITE = 50;
 var LAT_EMPRESA = -14.842472;
@@ -179,7 +178,6 @@ function iniciarApp() {
     initCamera();
     initGeo();
     syncDados();
-    // Auto-refresh 5 min
     refreshInterval = setInterval(function () {
       syncDados();
       if (isGestor) syncGestor();
@@ -469,14 +467,12 @@ function carregarPainel() {
 function renderPainel(d) {
   var h = '';
 
-  // Stats
   h += '<div class="painel-stats">';
   h += '<div class="p-stat"><div class="p-val green">' + d.presentes + '</div><div class="p-lbl">Presentes</div></div>';
   h += '<div class="p-stat"><div class="p-val red">' + d.ausentes + '</div><div class="p-lbl">Ausentes</div></div>';
   h += '<div class="p-stat"><div class="p-val cyan">' + d.totalFuncionarios + '</div><div class="p-lbl">Total</div></div>';
   h += '</div>';
 
-  // Colaboradores
   var nomes = Object.keys(d.colaboradores);
   nomes.forEach(function (n) {
     var c = d.colaboradores[n];
@@ -496,7 +492,6 @@ function renderPainel(d) {
     h += '</div>';
   });
 
-  // Alertas fora do raio
   if (d.alertas && d.alertas.length > 0) {
     h += '<div class="alerta-section">';
     h += '<div class="alerta-title">⚠️ Alertas — Fora do Raio</div>';
