@@ -28,7 +28,7 @@ var avisoViagemFeito = false;
   if (s) { try { sessao = JSON.parse(s); if (sessao && sessao.nome) { esconderLogin(); iniciarApp(); return; } } catch (e) { } }
 })();
 
-function toggle() {
+function toggleSenha() {
   var input = document.getElementById('loginPass');
   var icon = document.getElementById('eyeIcon');
   if (input.type === 'password') { input.type = 'text'; icon.textContent = '🙈'; } else { input.type = 'password'; icon.textContent = '👁️'; }
@@ -195,7 +195,6 @@ function toggleViagemLogic(isViagem) {
 }
 
 function selectType(labelEl, tipo) { 
-  // O CSS e o HTML (input radio) já lidam com o visual do ponto clicado (o circulo fica azul)
   tipoSelecionado = tipo; 
   checkSubmit(); 
 }
