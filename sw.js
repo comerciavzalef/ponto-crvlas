@@ -1,91 +1,52 @@
-// ══════════════════════════════════════════════════════════════
-//  SERVICE WORKER — Ponto Digital CRV/LAS
-// ══════════════════════════════════════════════════════════════
+/* ============================================================
+   PONTO DIGITAL — SERVICE WORKER v4 (Bypass API)
+   ============================================================ */
 
-var CACHE_NAME = 'ponto-v2'; // <-- Mude o número da versão aqui!
-
-var STATIC_ASSETS = [
-  './',
-  './index.html',
-  './style.css',
-  './app.js',
-  './manifest.json',
-  'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap'
+var CACHE_NAME = 'ponto-v4';
+var ASSETS = [
+    './',
+    './index.html',
+    './style.css',
+    './app.js',
+    './manifest.json'
 ];
 
 self.addEventListener('install', function (e) {
-  e.waitUntil(
-    caches.open(CACHE_NAME).then(function (cache) {
-      return cache.addAll(STATIC_ASSETS);
-    })
-  );
-  self.skipWaiting();
+    e.waitUntil(
+        caches.open(CACHE_NAME).then(function (cache) {
+            return cache.addAll(ASSETS);
+        })
+    );
+    self.skipWaiting();
 });
 
 self.addEventListener('activate', function (e) {
-  e.waitUntil(
-    caches.keys().then(function (names) {
-      return Promise.all(
-        names.filter(function (name) {
-          return name !== CACHE_NAME;
-        }).map(function (name) {
-          return caches.delete(name);
+    e.waitUntil(
+        caches.keys().then(function (keys) {
+            return Promise.all(
+                keys.filter(function (k) { return k !== CACHE_NAME; })
+                    .map(function (k) { return caches.delete(k); })
+            );
         })
-      );
-    })
-  );
-  self.clients.claim();
+    );
+    self.clients.claim();
 });
 
 self.addEventListener('fetch', function (e) {
-  var url = e.request.url;
+    // 🚨 A MÁGICA ESTÁ AQUI: Ignorar chamadas para o script do Google 🚨
+    if (e.request.url.indexOf('script.google.com') !== -1 || e.request.url.indexOf('script.googleusercontent.com') !== -1) {
+        e.respondWith(fetch(e.request));
+        return;
+    }
 
-  if (url.indexOf('script.google.com') > -1) {
     e.respondWith(
-      fetch(e.request)
-        .then(function (response) {
-          if (e.request.method === 'GET' && response.status === 200) {
-            var clone = response.clone();
-            caches.open(CACHE_NAME).then(function (cache) {
-              cache.put(e.request, clone);
+        caches.match(e.request).then(function (cached) {
+            return cached || fetch(e.request).then(function (response) {
+                return caches.open(CACHE_NAME).then(function (cache) {
+                    cache.put(e.request, response.clone());
+                    return response;
+                });
             });
-          }
-          return response;
-        })
-        .catch(function () {
-          return caches.match(e.request).then(function (cached) {
-            if (cached) return cached;
-            return new Response(
-              JSON.stringify({ erro: 'Sem conexão', offline: true }),
-              { headers: { 'Content-Type': 'application/json' } }
-            );
-          });
         })
     );
-    return;
-  }
-
-  e.respondWith(
-    caches.match(e.request).then(function (cached) {
-      if (cached) {
-        fetch(e.request).then(function (response) {
-          if (response.status === 200) {
-            caches.open(CACHE_NAME).then(function (cache) {
-              cache.put(e.request, response);
-            });
-          }
-        }).catch(function () {});
-        return cached;
-      }
-      return fetch(e.request).then(function (response) {
-        if (response.status === 200) {
-          var clone = response.clone();
-          caches.open(CACHE_NAME).then(function (cache) {
-            cache.put(e.request, clone);
-          });
-        }
-        return response;
-      });
-    })
-  );
 });
