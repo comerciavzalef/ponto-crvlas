@@ -2,7 +2,7 @@
    PONTO DIGITAL — SERVICE WORKER v4 (Bypass API)
    ============================================================ */
 
-var CACHE_NAME = 'ponto-v4';
+var CACHE_NAME = 'ponto-v5';
 var ASSETS = [
     './',
     './index.html',
