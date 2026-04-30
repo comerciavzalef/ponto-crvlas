@@ -315,3 +315,46 @@ function setBadge(on) {
   b.textContent = on ? 'Online' : 'Offline';
   b.className = 'badge ' + (on ? 'badge-online' : 'badge-offline');
 }
+
+// ══════════════════════════════════════════════════════════════
+//  TOOLTIPS — Balões de Dúvida (?)
+// ══════════════════════════════════════════════════════════════
+(function() {
+  var tooltipAtivo = null;
+
+  document.addEventListener('click', function(e) {
+    var icon = e.target.closest('.help-icon');
+
+    if (!icon) {
+      if (tooltipAtivo) { tooltipAtivo.remove(); tooltipAtivo = null; }
+      return;
+    }
+
+    if (tooltipAtivo) { tooltipAtivo.remove(); tooltipAtivo = null; }
+
+    var texto = icon.getAttribute('data-tooltip');
+    if (!texto) return;
+
+    var tip = document.createElement('div');
+    tip.className = 'tooltip-balloon';
+    tip.textContent = texto;
+    document.body.appendChild(tip);
+
+    var rect = icon.getBoundingClientRect();
+    var tipHeight = 80;
+
+    // Tenta abrir por CIMA; se não couber, abre por baixo
+    if (rect.top > tipHeight + 20) {
+      tip.style.bottom = (window.innerHeight - rect.top + 10 + window.scrollY) + 'px';
+      tip.style.top = 'auto';
+    } else {
+      tip.style.top = (rect.bottom + 10 + window.scrollY) + 'px';
+      tip.style.bottom = 'auto';
+    }
+
+    tip.style.left = Math.max(12, Math.min(rect.left + rect.width / 2 - 140, window.innerWidth - 292)) + 'px';
+
+    tooltipAtivo = tip;
+
+    setTimeout(function() {
+      if (tooltipAtivo === tip) { tip.remove(); tooltipAtivo =<span class="cursor">█</span>
