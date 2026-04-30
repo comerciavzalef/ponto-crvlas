@@ -354,7 +354,11 @@ function setBadge(on) {
 
     tip.style.left = Math.max(12, Math.min(rect.left + rect.width / 2 - 140, window.innerWidth - 292)) + 'px';
 
-    tooltipAtivo = tip;
+        tooltipAtivo = tip;
 
     setTimeout(function() {
-      if (tooltipAtivo === tip) { tip.remove(); tooltipAtivo =<span class="cursor">█</span>
+      if (tooltipAtivo === tip) { tip.remove(); tooltipAtivo = null; }
+    }, 5000);
+  });
+})();
+
