@@ -10,9 +10,9 @@ var LAT_EMPRESA = -14.842472;
 var LNG_EMPRESA = -39.987250;
 
 var CREDS_OFFLINE = {
-  'LUCAS':  'lucas2026', 'TASSIO': 'tassio2026',
-  'AMARAL': 'amaral2026', 'ALEX':   'alex2026',
-  'GESTOR': 'GP.Carlos2026'
+  'LUCAS':  '1e79f09abad6c8321bf6a1dee19aa4949ce95fa3f962361869c406555ade9062', 'TASSIO': '53c822e4be542a847100324d05458d7c155d9a0a3ee2c8ea6a621c3b426b123d',
+  'AMARAL': 'd16bcb871bbfe495833cee0fd592bbf47540fee7801ade3d8ccf7b97372ad042', 'ALEX':   'e3f961a998c170860de4cab5c8f9548522a1938d6599cf40f827333b503d8eed',
+  'GESTOR': '704bd714166d21ac85ed8a26fbde6b9be2d94981934305be4a7915a8bbd0c157'
 };
 
 var sessao = null;
@@ -28,7 +28,7 @@ var avisoViagemFeito = false;
   if (s) { try { sessao = JSON.parse(s); if (sessao && sessao.nome) { esconderLogin(); iniciarApp(); return; } } catch (e) { } }
 })();
 
-function toggleSenha() {
+function toggle() {
   var input = document.getElementById('loginPass');
   var icon = document.getElementById('eyeIcon');
   if (input.type === 'password') { input.type = 'text'; icon.textContent = '🙈'; } else { input.type = 'password'; icon.textContent = '👁️'; }
