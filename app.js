@@ -307,3 +307,11 @@ function renderRelatorio(d) {
 }
 
 function toast(msg) { var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(function () { t.classList.remove('show'); }, 3500); }
+
+// ══════════════ ATUALIZAÇÃO DA ETIQUETA ONLINE/OFFLINE ══════════════
+function setBadge(on) {
+  var b = document.getElementById('badgeStatus');
+  if (!b) return;
+  b.textContent = on ? 'Online' : 'Offline';
+  b.className = 'badge ' + (on ? 'badge-online' : 'badge-offline');
+}
