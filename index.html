@@ -33,6 +33,12 @@
       <input type="password" id="loginPass" class="login-field" placeholder="A sua palavra-passe" autocomplete="off" style="padding-right:48px; margin-bottom:0;">
       <button type="button" onclick="toggleSenha()" id="eyeBtn" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; font-size:1.1rem; color:rgba(235,235,245,.3);"><span id="eyeIcon">👁️</span></button>
     </div>
+    <div style="margin-bottom: 16px; text-align: left; display: flex; align-items: flex-start; gap: 8px; padding: 0 4px;">
+  <input type="checkbox" id="lgpdCheck" style="margin-top: 3px; width: 16px; height: 16px; accent-color: var(--blue); cursor: pointer;">
+  <label for="lgpdCheck" style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4; cursor: pointer;">
+    Declaro que li e concordo com a recolha de dados estritamente para fins laborais e de acesso ao sistema, conforme a <strong>LGPD</strong>.
+  </label>
+</div>
     <button class="login-btn" id="loginBtn" onclick="fazerLogin()" style="background:var(--orange);">Entrar</button>
     <div class="login-error" id="loginError"></div>
   </div>
