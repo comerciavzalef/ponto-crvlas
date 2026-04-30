@@ -34,25 +34,66 @@ function toggleSenha() {
   if (input.type === 'password') { input.type = 'text'; icon.textContent = '🙈'; } else { input.type = 'password'; icon.textContent = '👁️'; }
 }
 
-function fazerLogin() {
-  var user = document.getElementById('loginUser').value.trim();
+// ── FUNÇÃO DE LOGIN ATUALIZADA (LGPD + HASH) ─────────────────
+async function fazerLogin() {
+  var user = document.getElementById('loginUser').value.trim().toUpperCase();
   var pass = document.getElementById('loginPass').value.trim();
   var err = document.getElementById('loginError');
   var btn = document.getElementById('loginBtn');
+  var lgpd = document.getElementById('lgpdCheck');
 
   err.textContent = '';
-  if (!user || !pass) { err.textContent = 'Preencha todos os campos'; shakeLogin(); return; }
-  btn.disabled = true; btn.textContent = 'A verificar...';
 
-  fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ acao: 'login', usuario: user, senha: pass }), redirect: 'follow' })
+  // 1. Trava de Preenchimento
+  if (!user || !pass) { err.textContent = 'Preencha todos os campos'; shakeLogin(); return; }
+  
+  // 2. Trava da LGPD Jurídica
+  if (lgpd && !lgpd.checked) { err.textContent = 'Aceite os termos da LGPD para entrar'; shakeLogin(); return; }
+  
+  btn.disabled = true; btn.textContent = 'Autenticando...';
+
+  try {
+    // 3. Criptografa a senha antes de enviar (Nunca viaja em texto limpo)
+    var senhaHash = await gerarHash(pass);
+
+    fetch(API_URL, { 
+      method: 'POST', 
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
+      body: JSON.stringify({ acao: 'login', usuario: user, senha: senhaHash }), // <-- Envia o Hash
+      redirect: 'follow' 
+    })
     .then(function (r) { return r.json(); })
     .then(function (d) {
-      if (d.status === 'ok') { sessao = { nome: d.nome, nivel: d.nivel, senha: pass }; localStorage.setItem(SESSION_KEY, JSON.stringify(sessao)); esconderLogin(); iniciarApp(); } 
-      else { err.textContent = d.msg || 'Credenciais inválidas'; shakeLogin(); }
+      if (d.status === 'ok') { 
+        sessao = { nome: d.nome, nivel: d.nivel, senha: pass }; 
+        localStorage.setItem(SESSION_KEY, JSON.stringify(sessao)); 
+        esconderLogin(); iniciarApp(); 
+      } else { 
+        err.textContent = d.msg || 'Credenciais inválidas'; shakeLogin(); 
+      }
     }).catch(function () {
-      if (CREDS_OFFLINE[user] && CREDS_OFFLINE[user] === pass) { sessao = { nome: user, nivel: user === 'GESTOR' ? 'gestor' : 'funcionario', senha: pass }; localStorage.setItem(SESSION_KEY, JSON.stringify(sessao)); esconderLogin(); iniciarApp(); } 
-      else { err.textContent = 'Sem conexão e credenciais inválidas'; shakeLogin(); }
+      // Modo Offline usando o Hash
+      if (CREDS_OFFLINE[user] && CREDS_OFFLINE[user] === senhaHash) { 
+        sessao = { nome: user, nivel: user === 'GESTOR' ? 'gestor' : 'funcionario', senha: pass }; 
+        localStorage.setItem(SESSION_KEY, JSON.stringify(sessao)); 
+        esconderLogin(); iniciarApp(); 
+      } else { 
+        err.textContent = 'Sem conexão e credenciais inválidas'; shakeLogin(); 
+      }
     }).finally(function () { btn.disabled = false; btn.textContent = 'Entrar'; });
+
+  } catch(e) {
+    err.textContent = 'Erro no sistema de segurança'; shakeLogin();
+    btn.disabled = false; btn.textContent = 'Entrar';
+  }
+}
+
+// ── MOTOR DE CRIPTOGRAFIA SHA-256 ────────────────────────────
+async function gerarHash(texto) {
+  const msgBuffer = new TextEncoder().encode(texto);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 function shakeLogin() { var c = document.querySelector('.login-card'); c.classList.add('shake'); setTimeout(function () { c.classList.remove('shake'); }, 500); }
