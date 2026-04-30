@@ -200,5 +200,21 @@
 <div class="toast" id="toast"></div>
 
 <script src="app.js"></script>
+
+<!-- 🔴 ADICIONE ESTE BLOCO AQUI PARA LIGAR O CACHE E A INSTALAÇÃO -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.register('sw.js').then(function(registration) {
+        console.log('ServiceWorker ligado com sucesso!');
+      }, function(err) {
+        console.log('Erro no ServiceWorker: ', err);
+      });
+    });
+  }
+</script>
+
+</body>
+</html>
 </body>
 </html>
