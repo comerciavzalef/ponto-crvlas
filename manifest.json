@@ -1,42 +1,21 @@
 {
   "name": "Ponto Digital — CRV/LAS",
-  "short_name": "Ponto Digital",
-  "description": "Controle de Ponto Digital — Grupo Carlos Vaz",
+  "short_name": "Ponto",
+  "description": "Registo de Assiduidade — Grupo Carlos Vaz",
   "start_url": "./index.html",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#030a14",
-  "theme_color": "#030a14",
+  "background_color": "#000000",
+  "theme_color": "#000000",
   "categories": ["business", "productivity"],
   "lang": "pt-BR",
   "dir": "ltr",
   "icons": [
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%2306b6d4'/%3E%3Cstop offset='100%25' stop-color='%23a855f7'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='512' height='512' rx='96' fill='%23081425'/%3E%3Ccircle cx='256' cy='256' r='110' fill='none' stroke='url(%23g)' stroke-width='10' stroke-linecap='round'/%3E%3Cline x1='256' y1='256' x2='256' y2='180' stroke='%2306b6d4' stroke-width='10' stroke-linecap='round'/%3E%3Cline x1='256' y1='256' x2='310' y2='286' stroke='%23a855f7' stroke-width='7' stroke-linecap='round'/%3E%3Ccircle cx='256' cy='256' r='8' fill='%2322d3ee'/%3E%3C/svg%3E",
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23ff9f0a'/%3E%3Cstop offset='100%25' stop-color='%23ff453a'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='512' height='512' fill='url(%23g)'/%3E%3Ctext x='50%25' y='55%25' text-anchor='middle' dominant-baseline='middle' font-size='240'%3E⏱️%3C/text%3E%3C/svg%3E",
       "sizes": "512x512",
       "type": "image/svg+xml",
-      "purpose": "any"
-    },
-    {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%2306b6d4'/%3E%3Cstop offset='100%25' stop-color='%23a855f7'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='512' height='512' fill='%23081425'/%3E%3Ccircle cx='256' cy='256' r='110' fill='none' stroke='url(%23g)' stroke-width='10' stroke-linecap='round'/%3E%3Cline x1='256' y1='256' x2='256' y2='180' stroke='%2306b6d4' stroke-width='10' stroke-linecap='round'/%3E%3Cline x1='256' y1='256' x2='310' y2='286' stroke='%23a855f7' stroke-width='7' stroke-linecap='round'/%3E%3Ccircle cx='256' cy='256' r='8' fill='%2322d3ee'/%3E%3C/svg%3E",
-      "sizes": "512x512",
-      "type": "image/svg+xml",
-      "purpose": "maskable"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "Registrar Ponto",
-      "short_name": "Ponto",
-      "description": "Abrir tela de registro",
-      "url": "./index.html",
-      "icons": [
-        {
-          "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%2306b6d4'/%3E%3Cstop offset='100%25' stop-color='%23a855f7'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='96' height='96' rx='18' fill='%23081425'/%3E%3Ccircle cx='48' cy='48' r='22' fill='none' stroke='url(%23g)' stroke-width='3' stroke-linecap='round'/%3E%3Cline x1='48' y1='48' x2='48' y2='34' stroke='%2306b6d4' stroke-width='3' stroke-linecap='round'/%3E%3Cline x1='48' y1='48' x2='60' y2='54' stroke='%23a855f7' stroke-width='2' stroke-linecap='round'/%3E%3Ccircle cx='48' cy='48' r='2' fill='%2322d3ee'/%3E%3C/svg%3E",
-          "sizes": "96x96",
-          "type": "image/svg+xml"
-        }
-      ]
+      "purpose": "any maskable"
     }
   ]
 }
