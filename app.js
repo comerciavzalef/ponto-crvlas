@@ -34,7 +34,7 @@ function toggleSenha() {
   if (input.type === 'password') { input.type = 'text'; icon.textContent = '🙈'; } else { input.type = 'password'; icon.textContent = '👁️'; }
 }
 
-// ── FUNÇÃO DE LOGIN ATUALIZADA (LGPD + HASH) ─────────────────
+// ── FUNÇÃO DE LOGIN ATUALIZADA (CORREÇÃO DA SESSÃO HASH) ─────────────────
 async function fazerLogin() {
   var user = document.getElementById('loginUser').value.trim().toUpperCase();
   var pass = document.getElementById('loginPass').value.trim();
@@ -44,37 +44,34 @@ async function fazerLogin() {
 
   err.textContent = '';
 
-  // 1. Trava de Preenchimento
   if (!user || !pass) { err.textContent = 'Preencha todos os campos'; shakeLogin(); return; }
-  
-  // 2. Trava da LGPD Jurídica
   if (lgpd && !lgpd.checked) { err.textContent = 'Aceite os termos da LGPD para entrar'; shakeLogin(); return; }
   
   btn.disabled = true; btn.textContent = 'Autenticando...';
 
   try {
-    // 3. Criptografa a senha antes de enviar (Nunca viaja em texto limpo)
     var senhaHash = await gerarHash(pass);
 
     fetch(API_URL, { 
       method: 'POST', 
       headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
-      body: JSON.stringify({ acao: 'login', usuario: user, senha: senhaHash }), // <-- Envia o Hash
+      body: JSON.stringify({ acao: 'login', usuario: user, senha: senhaHash }), 
       redirect: 'follow' 
     })
     .then(function (r) { return r.json(); })
     .then(function (d) {
       if (d.status === 'ok') { 
-        sessao = { nome: d.nome, nivel: d.nivel, senha: pass }; 
+        // 🔥 CORREÇÃO: Agora guarda o Hash na sessão (senhaHash), e não o "pass"
+        sessao = { nome: d.nome, nivel: d.nivel, senha: senhaHash }; 
         localStorage.setItem(SESSION_KEY, JSON.stringify(sessao)); 
         esconderLogin(); iniciarApp(); 
       } else { 
         err.textContent = d.msg || 'Credenciais inválidas'; shakeLogin(); 
       }
     }).catch(function () {
-      // Modo Offline usando o Hash
       if (CREDS_OFFLINE[user] && CREDS_OFFLINE[user] === senhaHash) { 
-        sessao = { nome: user, nivel: user === 'GESTOR' ? 'gestor' : 'funcionario', senha: pass }; 
+        // 🔥 CORREÇÃO OFFLINE: Guarda o Hash também!
+        sessao = { nome: user, nivel: user === 'GESTOR' ? 'gestor' : 'funcionario', senha: senhaHash }; 
         localStorage.setItem(SESSION_KEY, JSON.stringify(sessao)); 
         esconderLogin(); iniciarApp(); 
       } else { 
