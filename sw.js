@@ -2,7 +2,7 @@
 //  SERVICE WORKER — Ponto Digital CRV/LAS
 // ══════════════════════════════════════════════════════════════
 
-var CACHE_NAME = 'cv-ponto-v5.1';
+var CACHE_NAME = 'ponto-v2'; // <-- Mude o número da versão aqui!
 
 var STATIC_ASSETS = [
   './',
