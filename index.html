@@ -21,7 +21,7 @@
   <div class="login-card">
     <div class="brand-icon" style="background: linear-gradient(145deg, var(--orange), var(--red));">⏱️</div>
     <h2>Ponto Digital</h2>
-    <p class="sub">CRV/LAS — Registo de Assiduidade</p>
+    <p class="sub">CRV/LAS — Registro de Assiduidade</p>
     <select id="loginUser" class="login-field">
       <option value="">Selecione o seu nome</option>
       <option value="LUCAS">Lucas</option>
@@ -31,13 +31,13 @@
       <option value="GESTOR">Gestor</option>
     </select>
     <div style="position:relative; margin-bottom:14px;">
-      <input type="password" id="loginPass" class="login-field" placeholder="A sua palavra-passe" autocomplete="off" style="padding-right:48px; margin-bottom:0;">
+      <input type="password" id="loginPass" class="login-field" placeholder="Sua senha" autocomplete="off" style="padding-right:48px; margin-bottom:0;">
       <button type="button" onclick="toggleSenha()" id="eyeBtn" style="position:absolute; right:4px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; font-size:1.2rem; color:rgba(235,235,245,.4); z-index:10; padding:10px;"><span id="eyeIcon">👁️</span></button>
     </div>
     <div style="margin-bottom: 16px; text-align: left; display: flex; align-items: flex-start; gap: 8px; padding: 0 4px;">
       <input type="checkbox" id="lgpdCheck" style="margin-top: 3px; width: 16px; height: 16px; accent-color: var(--blue); cursor: pointer;">
       <label for="lgpdCheck" style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4; cursor: pointer;">
-        Declaro que li e concordo com a recolha de dados estritamente para fins laborais e de acesso ao sistema, conforme a <strong>LGPD</strong>.
+        Declaro que li e concordo com a coleta de dados estritamente para fins laborais e de acesso ao sistema, conforme a <strong>LGPD</strong>.
       </label>
     </div>
     <button class="login-btn" id="loginBtn" onclick="fazerLogin()" style="background:var(--orange);">Entrar</button>
@@ -47,7 +47,7 @@
 
 <div id="ldScreen" class="hidden">
   <div class="ld-spinner" style="border-top-color: var(--orange);"></div>
-  <div class="ld-text" id="ldText">A autenticar...</div>
+  <div class="ld-text" id="ldText">Autenticando...</div>
 </div>
 <div id="ldBarTop" style="background: var(--orange); box-shadow: 0 0 16px rgba(255,159,10,.5);"></div>
 
@@ -68,8 +68,9 @@
   </div>
 
   <div class="container">
+
     <div id="areaOperacional">
-      <div class="section-label">Validação Facial <span class="help-icon" data-tooltip="Tire uma foto nítida do seu rosto para validar a sua identidade neste registo.">?</span></div>
+      <div class="section-label">Validação Facial <span class="help-icon" data-tooltip="Tire uma foto nítida do seu rosto para validar sua identidade neste registro.">?</span></div>
       <div class="ios-card" style="padding: 16px; text-align: center;">
         <video id="videoEl" autoplay playsinline style="width:100%; max-width:240px; border-radius:16px; margin:0 auto; display:block;"></video>
         <canvas id="canvasEl" style="display:none; width:100%; max-width:240px; border-radius:16px; margin:0 auto;"></canvas>
@@ -101,7 +102,7 @@
         </div>
 
         <div class="ios-card-row hidden" id="viagemDestinoContainer" style="background:var(--surface-2);">
-          <input type="text" id="viagemDestino" class="form-field" placeholder="Para onde está a viajar? (Ex: Boa Nova)" style="background:transparent; border:none; padding:0; font-size:.9rem; box-shadow:none;">
+          <input type="text" id="viagemDestino" class="form-field" placeholder="Para onde está viajando? (Ex: Boa Nova)" style="background:transparent; border:none; padding:0; font-size:.9rem; box-shadow:none;">
         </div>
       </div>
 
@@ -129,30 +130,33 @@
         </label>
       </div>
 
-      <button class="submit-btn" id="submitBtn" onclick="registrarPonto()" disabled style="margin-top:20px; background:var(--green); font-size:1.05rem;">Confirmar Registo</button>
+      <button class="submit-btn" id="submitBtn" onclick="registrarPonto()" disabled style="margin-top:20px; background:var(--green); font-size:1.05rem;">Confirmar Registro</button>
 
-      <div class="section-label" style="margin-top:30px;">O seu histórico de hoje</div>
+      <div class="section-label" style="margin-top:30px;">Seu histórico de hoje</div>
       <div class="timeline-container" id="timelineList"></div>
     </div>
 
+    <!-- PAINEL DO GESTOR -->
     <div id="gestorSection" style="display:none; margin-top:20px;">
+      
       <div class="section-label">Visão Geral de Hoje</div>
-      <div class="stats-grid">
+      <div class="stats-grid" style="grid-template-columns: 1fr 1fr;">
         <div class="stat-card blue" onclick="abrirLista('presentes')"><span class="s-icon">👥</span><div class="s-label">Presentes</div><div class="s-value blue" id="statPresentes">0</div></div>
-        <div class="stat-card red" onclick="abrirLista('alertas')"><span class="s-icon">⚠️</span><div class="s-label">Alertas GPS</div><div class="s-value red" id="statAlertas">0</div></div>
         <div class="stat-card orange" onclick="abrirLista('viagem')"><span class="s-icon">🚗</span><div class="s-label">Em Viagem</div><div class="s-value orange" id="statViagem">0</div></div>
+        <div class="stat-card red" onclick="abrirLista('alertas')"><span class="s-icon">⚠️</span><div class="s-label">Alertas GPS</div><div class="s-value red" id="statAlertas">0</div></div>
+        <div class="stat-card" style="border: 0.5px solid var(--border);" onclick="abrirLista('pendentes')"><span class="s-icon">⏳</span><div class="s-label" style="color: var(--text-secondary);">Pendentes</div><div class="s-value" id="statPendentes" style="color: var(--text-secondary);">0</div></div>
       </div>
 
-      <button class="submit-btn" onclick="abrirPainel()" style="background:var(--blue); margin-bottom:24px;">Abrir Painel de Controlo</button>
+      <button class="submit-btn" onclick="abrirPainel()" style="background:var(--blue); margin-bottom:24px;">Abrir Painel de Controle</button>
 
-      <div class="section-label">Atividade Recente da Equipa</div>
+      <div class="section-label">Atividade Recente da Equipe</div>
       <div class="timeline-container" id="timelineGestor" style="margin-bottom:24px; max-height: 250px; overflow-y: auto;">
-         <p class="empty-text">A sincronizar atividades...</p>
+         <p class="empty-text">Sincronizando atividades...</p>
       </div>
 
       <div class="relatorio-switch-row" id="gestorReportRow">
         <span class="relatorio-switch-label" style="display:flex; flex-direction:column;">
-          <span>Gerar Histórico Mensal <span class="help-icon" data-tooltip="Calcula horas extras e faltas do mês inteiro para a equipa.">?</span></span>
+          <span>Gerar Histórico Mensal <span class="help-icon" data-tooltip="Calcula horas extras e faltas do mês inteiro para a equipe.">?</span></span>
           <span style="font-size:0.7rem; color:var(--text-tertiary); font-weight:400; margin-top:2px;">Exportar PDF para a contabilidade</span>
         </span>
         <button class="cam-btn primary" onclick="abrirRelatorio()" style="background:var(--blue); padding:8px 16px;">Gerar PDF</button>
@@ -162,14 +166,13 @@
   </div>
 </div>
 
-<!-- Modal Listas Rápidas (Drill-down) -->
 <div class="modal-full" id="listaRapidaModal" style="z-index: 5500;">
   <div class="modal-bar"><h2 id="listaRapidaTitulo">Lista</h2><button class="modal-close" onclick="fecharLista()">✕</button></div>
   <div class="modal-body" id="listaRapidaBody"></div>
 </div>
 
 <div class="modal-full" id="painelModal">
-  <div class="modal-bar"><h2>👥 Painel de Controlo</h2><button class="modal-close" onclick="fecharPainel()">✕</button></div>
+  <div class="modal-bar"><h2>👥 Painel de Controle</h2><button class="modal-close" onclick="fecharPainel()">✕</button></div>
   <div class="modal-body" id="painelBody"></div>
 </div>
 
@@ -183,7 +186,7 @@
         <label class="form-label">Motivo da Justificativa <span class="help-icon" data-tooltip="Escreva o motivo (Ex: Atestado médico, esquecimento do app). Isso abonará a falta no PDF.">?</span></label>
         <input type="text" id="justMotivo" class="form-field" placeholder="Ex: Atestado Médico">
       </div>
-      <button class="submit-btn" id="btnSalvarJust" onclick="salvarJustificativa()" style="background:var(--orange);">Gravar Justificativa</button>
+      <button class="submit-btn" id="btnSalvarJust" onclick="salvarJustificativa()" style="background:var(--orange);">Salvar Justificativa</button>
     </div>
   </div>
 </div>
@@ -201,7 +204,7 @@
 
 <div class="success-overlay" id="successOverlay">
   <div class="success-icon" id="successIcon">✅</div>
-  <div class="success-msg" id="successMsg">Registo Guardado!</div>
+  <div class="success-msg" id="successMsg">Registro Salvo!</div>
   <div class="success-detail" id="successDetail"></div>
 </div>
 <div class="toast" id="toast"></div>
