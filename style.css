@@ -257,3 +257,23 @@ select.login-field option { background: #1c1c1e; }
   from { opacity: 0; transform: translateY(6px) scale(.96); }
   to   { opacity: 1; transform: translateY(0) scale(1); }
 }
+
+/* Remove a duplicidade da tag Gestor no topo */
+.badge-gestor + .user-badge { 
+    display: none !important; 
+}
+
+/* Textos de estado vazio nas listas */
+.empty-text {
+    color: var(--text-tertiary);
+    font-size: .85rem;
+    text-align: center;
+    padding: 40px 20px;
+}
+
+/* Ajuste Glassmorphism para as listas rápidas */
+.modal-full {
+    background: rgba(0, 0, 0, 0.8) !important;
+    backdrop-filter: blur(50px) !important;
+    -webkit-backdrop-filter: blur(50px) !important;
+}
