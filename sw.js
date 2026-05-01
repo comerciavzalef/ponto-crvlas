@@ -1,4 +1,4 @@
-var CACHE_NAME = 'ponto-v9.3-master';
+var CACHE_NAME = 'ponto-v9.4-master';
 var ASSETS = ['./', './index.html', './style.css', './app.js', './manifest.json'];
 
 self.addEventListener('install', function (e) {
