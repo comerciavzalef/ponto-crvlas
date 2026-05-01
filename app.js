@@ -9,9 +9,10 @@
 
 // 1. IDENTIDADE DO CLIENTE (Altere apenas isto para cada empresa nova)
 const APP_CONFIG = {
-    idCliente: "CRV_BAHIA",        // O "RG" da empresa na sua planilha mestra
-    aplicativo: "PONTO_APP",     // Identifica qual app está rodando (Estoque ou Ponto)
-    urlCentral: "COLE_AQUI_A_URL_DO_SEU_NOVO_APPS_SCRIPT" // A URL que a outra IA vai gerar na Fase 1
+    idCliente: "CRV_MATRIZ",        
+    aplicativo: "PONTO_APP",     
+    urlCentral: "https://script.google.com/macros/s/AKfycbx7YBpAS0GwwcvnKA0_2GjbPSYLpFan1XcLjyHkCJl8PZ99U3F5E9-1kyaOPgdTXw1-/exec", // A URL que o Google vai te dar
+    apiKey: "ee91297b-685b-4ae4-b131-8434841c882e" 
 };
 
 // 2. O "ESPIÃO" (Não precisa alterar nada daqui para baixo)
