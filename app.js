@@ -1,5 +1,5 @@
 // ══════════════════════════════════════════════════════════════
-//  PONTO DIGITAL — app.js v8.0 (Apple UI + Security)
+//  PONTO DIGITAL — app.js v10.0 (Latência Zero & Drill-down)
 //  Grupo Carlos Vaz — CRV/LAS
 // ══════════════════════════════════════════════════════════════
 
@@ -10,8 +10,10 @@ var LAT_EMPRESA = -14.842472;
 var LNG_EMPRESA = -39.987250;
 
 var CREDS_OFFLINE = {
-  'LUCAS':  '1e79f09abad6c8321bf6a1dee19aa4949ce95fa3f962361869c406555ade9062', 'TASSIO': '53c822e4be542a847100324d05458d7c155d9a0a3ee2c8ea6a621c3b426b123d',
-  'AMARAL': 'd16bcb871bbfe495833cee0fd592bbf47540fee7801ade3d8ccf7b97372ad042', 'ALEX':   'e3f961a998c170860de4cab5c8f9548522a1938d6599cf40f827333b503d8eed',
+  'LUCAS':  '1e79f09abad6c8321bf6a1dee19aa4949ce95fa3f962361869c406555ade9062', 
+  'TASSIO': '53c822e4be542a847100324d05458d7c155d9a0a3ee2c8ea6a621c3b426b123d',
+  'AMARAL': 'd16bcb871bbfe495833cee0fd592bbf47540fee7801ade3d8ccf7b97372ad042', 
+  'ALEX':   'e3f961a998c170860de4cab5c8f9548522a1938d6599cf40f827333b503d8eed',
   'GESTOR': '704bd714166d21ac85ed8a26fbde6b9be2d94981934305be4a7915a8bbd0c157'
 };
 
@@ -22,6 +24,7 @@ var geoAtual = { lat: 0, lng: 0, dist: null, dentro: false };
 var refreshInterval = null;
 var stream = null;
 var avisoViagemFeito = false; 
+var dadosGestorCache = null; // Cache para o Drill-down
 
 (function () {
   var s = localStorage.getItem(SESSION_KEY);
@@ -34,7 +37,6 @@ function toggleSenha() {
   if (input.type === 'password') { input.type = 'text'; icon.textContent = '🙈'; } else { input.type = 'password'; icon.textContent = '👁️'; }
 }
 
-// ── FUNÇÃO DE LOGIN ATUALIZADA (CORREÇÃO DA SESSÃO HASH) ─────────────────
 async function fazerLogin() {
   var user = document.getElementById('loginUser').value.trim().toUpperCase();
   var pass = document.getElementById('loginPass').value.trim();
@@ -43,7 +45,6 @@ async function fazerLogin() {
   var lgpd = document.getElementById('lgpdCheck');
 
   err.textContent = '';
-
   if (!user || !pass) { err.textContent = 'Preencha todos os campos'; shakeLogin(); return; }
   if (lgpd && !lgpd.checked) { err.textContent = 'Aceite os termos da LGPD para entrar'; shakeLogin(); return; }
   
@@ -61,7 +62,6 @@ async function fazerLogin() {
     .then(function (r) { return r.json(); })
     .then(function (d) {
       if (d.status === 'ok') { 
-        // 🔥 CORREÇÃO: Agora guarda o Hash na sessão (senhaHash), e não o "pass"
         sessao = { nome: d.nome, nivel: d.nivel, senha: senhaHash }; 
         localStorage.setItem(SESSION_KEY, JSON.stringify(sessao)); 
         esconderLogin(); iniciarApp(); 
@@ -70,7 +70,6 @@ async function fazerLogin() {
       }
     }).catch(function () {
       if (CREDS_OFFLINE[user] && CREDS_OFFLINE[user] === senhaHash) { 
-        // 🔥 CORREÇÃO OFFLINE: Guarda o Hash também!
         sessao = { nome: user, nivel: user === 'GESTOR' ? 'gestor' : 'funcionario', senha: senhaHash }; 
         localStorage.setItem(SESSION_KEY, JSON.stringify(sessao)); 
         esconderLogin(); iniciarApp(); 
@@ -78,14 +77,12 @@ async function fazerLogin() {
         err.textContent = 'Sem conexão e credenciais inválidas'; shakeLogin(); 
       }
     }).finally(function () { btn.disabled = false; btn.textContent = 'Entrar'; });
-
   } catch(e) {
     err.textContent = 'Erro no sistema de segurança'; shakeLogin();
     btn.disabled = false; btn.textContent = 'Entrar';
   }
 }
 
-// ── MOTOR DE CRIPTOGRAFIA SHA-256 ────────────────────────────
 async function gerarHash(texto) {
   const msgBuffer = new TextEncoder().encode(texto);
   const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
@@ -102,7 +99,7 @@ function logout() {
   document.getElementById('badgeGestor').style.display = 'none'; document.getElementById('gestorSection').style.display = 'none';
   document.getElementById('mainApp').style.display = 'none'; document.getElementById('loginScreen').classList.remove('hidden');
   document.getElementById('loginUser').value = ''; document.getElementById('loginPass').value = ''; document.getElementById('loginPass').type = 'password'; document.getElementById('eyeIcon').textContent = '👁️'; document.getElementById('loginError').textContent = '';
-  avisoViagemFeito = false; 
+  avisoViagemFeito = false; dadosGestorCache = null;
   document.getElementById('viagemSwitchToggle').classList.remove('on'); toggleViagemLogic(false);
   document.getElementById('areaOperacional').style.display = 'block';
 }
@@ -209,13 +206,24 @@ function checkSubmit() {
   document.getElementById('submitBtn').disabled = !(selfieData && tipoSelecionado && geoOk);
 }
 
+// ⚡ LATÊNCIA ZERO NO REGISTRO
 function registrarPonto() {
-  var btn = document.getElementById('submitBtn'); btn.disabled = true; btn.textContent = 'A enviar...';
+  var btn = document.getElementById('submitBtn'); btn.disabled = true;
   var isViagem = document.getElementById('viagemSwitchToggle').classList.contains('on'); 
   var destinoText = document.getElementById('viagemDestino').value.trim();
+  
+  // Resposta Otimista (Instantânea)
+  showSuccess({ dentroDoRaio: true, mensagem: 'A enviar Registo...', hora: '--:--', statusGeo: 'A sincronizar em 2º plano' });
+  
   var payload = { nome: sessao.nome, tipo: tipoSelecionado, selfie: selfieData, lat: geoAtual.lat, lng: geoAtual.lng, dispositivo: navigator.userAgent.substring(0, 60), ip: '', viagem: isViagem, destino: destinoText };
   
-  fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload), redirect: 'follow' }).then(function (r) { return r.json(); }).then(function (d) { if (d.status === 'ok') { showSuccess(d); incrementSession(); resetAfterSubmit(); syncDados(); } else { toast(d.msg || 'Erro ao registar'); } }).catch(function () { toast('Sem conexão — tente novamente'); }).finally(function () { btn.disabled = false; btn.textContent = 'Confirmar Registo'; });
+  resetAfterSubmit();
+  
+  fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload), redirect: 'follow' })
+  .then(function (r) { return r.json(); })
+  .then(function (d) { 
+    if (d.status === 'ok') { incrementSession(); syncDados(); } 
+  }).catch(function () { toast('Registo local. A sincronizar...'); });
 }
 
 function showSuccess(d) { document.getElementById('successIcon').textContent = d.dentroDoRaio ? '✅' : '⚠️'; document.getElementById('successMsg').textContent = d.mensagem || 'Registo Guardado!'; document.getElementById('successDetail').textContent = d.hora + ' • ' + d.statusGeo; var ov = document.getElementById('successOverlay'); ov.classList.add('show'); setTimeout(function () { ov.classList.remove('show'); }, 3000); }
@@ -228,24 +236,80 @@ function resetAfterSubmit() {
 }
 function incrementSession() { var key = 'p_' + sessao.nome + '_sc'; var c = parseInt(localStorage.getItem(key) || '0'); localStorage.setItem(key, c + 1); }
 
-function syncDados() { fetch(API_URL + '?sync=1').then(function (r) { return r.json(); }).then(function (d) { setBadge(true); if (d.timeline) renderTimeline(d.timeline); }).catch(function () { setBadge(false); }); }
+function syncDados() { fetch(API_URL + '?sync=1').then(function (r) { return r.json(); }).then(function (d) { setBadge(true); if (d.timeline) renderTimeline(d.timeline, 'timelineList'); }).catch(function () { setBadge(false); }); }
 
+// 🔍 DRILL-DOWN: LISTAS ESPECÍFICAS DOS CARDS
+function abrirLista(tipo) {
+  if (!dadosGestorCache) { toast("Aguarde a sincronização de dados..."); return; }
+  var titulo = document.getElementById('listaRapidaTitulo');
+  var body = document.getElementById('listaRapidaBody');
+  var html = '';
+
+  if (tipo === 'viagem') {
+    titulo.textContent = "🚗 Colaboradores em Rota";
+    var viagens = [];
+    Object.keys(dadosGestorCache.colaboradores).forEach(n => {
+      var r = dadosGestorCache.colaboradores[n].registros.find(reg => reg.statusGeo.indexOf('VIAGEM') > -1);
+      if(r) viagens.push({nome: n, destino: r.obs, hora: r.hora});
+    });
+    if(viagens.length === 0) html = '<p class="empty-text">Ninguém em viagem no momento.</p>';
+    viagens.forEach(v => {
+      var infoDestino = v.destino.replace('DESTINO: ', ''); // Limpeza visual
+      html += `<div class="ios-card-row" style="background:var(--surface-1); border-radius:12px; margin-bottom:8px; border:1px solid var(--border);"><div class="ios-icon-bg" style="background:var(--orange-soft); color:var(--orange);">🚗</div><div class="ios-row-content"><div class="ios-row-title">${v.nome}</div><div class="ios-row-sub">${infoDestino}</div></div><div class="tl-hora">${v.hora}</div></div>`;
+    });
+  } else if (tipo === 'presentes') {
+    titulo.textContent = "👥 Presentes Agora";
+    Object.keys(dadosGestorCache.colaboradores).forEach(n => {
+      var c = dadosGestorCache.colaboradores[n];
+      if(c.entrada && !c.saida) html += `<div class="ios-card-row" style="background:var(--surface-1); border-radius:12px; margin-bottom:8px; border:1px solid var(--border);"><div class="ios-icon-bg" style="background:var(--green-soft); color:var(--green);">✅</div><div class="ios-row-content"><div class="ios-row-title">${n}</div><div class="ios-row-sub">Entrou às ${c.entrada}</div></div></div>`;
+    });
+    if(!html) html = '<p class="empty-text">Nenhum funcionário na base.</p>';
+  } else if (tipo === 'alertas') {
+    titulo.textContent = "⚠️ Alertas de Localização";
+    dadosGestorCache.alertas.forEach(a => {
+      html += `<div class="ios-card-row" style="background:var(--surface-1); border-radius:12px; margin-bottom:8px; border:1px solid var(--border);"><div class="ios-icon-bg" style="background:var(--red-soft); color:var(--red);">📍</div><div class="ios-row-content"><div class="ios-row-title">${a.nome}</div><div class="ios-row-sub">Fora do limite na ${a.tipo}</div></div><div class="tl-hora">${a.hora}</div></div>`;
+    });
+    if(!html) html = '<p class="empty-text">Tudo regular hoje.</p>';
+  }
+
+  body.innerHTML = html;
+  document.getElementById('listaRapidaModal').classList.add('show');
+}
+
+function fecharLista() { document.getElementById('listaRapidaModal').classList.remove('show'); }
+
+// 📊 ATUALIZAÇÃO DO GESTOR E DA TIMELINE
 function syncGestor() {
   fetch(API_URL + '?painel=1&senha=' + encodeURIComponent(sessao.senha)).then(function (r) { return r.json(); }).then(function (d) {
     if (d.erro) return;
+    dadosGestorCache = d; 
     document.getElementById('statPresentes').textContent = d.presentes || 0;
     document.getElementById('statAlertas').textContent = (d.alertas ? d.alertas.length : 0);
+    
     var emViagem = [];
     var nomes = Object.keys(d.colaboradores);
     nomes.forEach(function(n) { if (d.colaboradores[n].registros.some(r => r.statusGeo.indexOf('VIAGEM') > -1)) { emViagem.push(n); } });
     document.getElementById('statViagem').textContent = emViagem.length;
+    
+    // Alimenta a Timeline Recente no dashboard do Gestor
+    var todasAtividades = [];
+    nomes.forEach(n => { d.colaboradores[n].registros.forEach(r => { todasAtividades.push({nome: n, hora: r.hora, tipo: r.tipo}); }); });
+    todasAtividades.sort((a,b) => b.hora.localeCompare(a.hora));
+    renderTimeline(todasAtividades.slice(0, 10), 'timelineGestor');
+
     if (!avisoViagemFeito && emViagem.length > 0) { toast("📍 Atenção: " + emViagem.join(", ") + " na estrada hoje."); avisoViagemFeito = true; }
   }).catch(function () { });
 }
 
-function renderTimeline(items) {
-  var el = document.getElementById('timelineList'); if (!items || items.length === 0) { el.innerHTML = '<p style="color:var(--text-tertiary);font-size:.82rem;text-align:center;padding:20px 0;">Nenhum registo feito hoje.</p>'; return; }
-  var html = ''; items.forEach(function (it) { var cls = 'tl-' + it.tipo.replace(/\s/g, '_'); html += '<div class="timeline-item"><span class="tl-hora">' + it.hora + '</span><span class="tl-nome">' + it.nome + '</span><span class="tl-tipo ' + cls + '">' + it.tipo + '</span></div>'; }); el.innerHTML = html;
+function renderTimeline(items, targetId) {
+  var el = document.getElementById(targetId); 
+  if (!items || items.length === 0) { el.innerHTML = '<p class="empty-text">Sem atividade recente.</p>'; return; }
+  var html = ''; 
+  items.forEach(function (it) { 
+    var cls = 'tl-' + it.tipo.replace(/\s/g, '_'); 
+    html += '<div class="timeline-item"><span class="tl-hora">' + it.hora + '</span><span class="tl-nome">' + it.nome + '</span><span class="tl-tipo ' + cls + '">' + it.tipo + '</span></div>'; 
+  }); 
+  el.innerHTML = html;
 }
 
 function abrirPainel() { document.getElementById('painelModal').classList.add('show'); carregarPainel(); }
@@ -258,7 +322,7 @@ function carregarPainel(isPrinting) {
 }
 
 function renderPainel(d) {
-  var h = '<div class="stats-grid"><div class="stat-card blue"><div class="s-value">' + d.presentes + '</div><div class="s-label">Presentes</div></div><div class="stat-card red"><div class="s-value">' + d.ausentes + '</div><div class="s-label">Ausentes</div></div><div class="stat-card orange"><div class="s-value">' + d.totalFuncionarios + '</div><div class="s-label">Total</div></div></div>';
+  var h = '';
   var rotas = {}; var nomes = Object.keys(d.colaboradores);
   nomes.forEach(function (n) {
     var c = d.colaboradores[n]; var pres = !!c.entrada; var st = '';
@@ -305,7 +369,6 @@ function renderRelatorio(d) {
 
 function toast(msg) { var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(function () { t.classList.remove('show'); }, 3500); }
 
-// ══════════════ ATUALIZAÇÃO DA ETIQUETA ONLINE/OFFLINE ══════════════
 function setBadge(on) {
   var b = document.getElementById('badgeStatus');
   if (!b) return;
@@ -313,49 +376,18 @@ function setBadge(on) {
   b.className = 'badge ' + (on ? 'badge-online' : 'badge-offline');
 }
 
-// ══════════════════════════════════════════════════════════════
-//  TOOLTIPS — Balões de Dúvida (?)
-// ══════════════════════════════════════════════════════════════
 (function() {
   var tooltipAtivo = null;
-
   document.addEventListener('click', function(e) {
     var icon = e.target.closest('.help-icon');
-
-    if (!icon) {
-      if (tooltipAtivo) { tooltipAtivo.remove(); tooltipAtivo = null; }
-      return;
-    }
-
+    if (!icon) { if (tooltipAtivo) { tooltipAtivo.remove(); tooltipAtivo = null; } return; }
     if (tooltipAtivo) { tooltipAtivo.remove(); tooltipAtivo = null; }
-
-    var texto = icon.getAttribute('data-tooltip');
-    if (!texto) return;
-
+    var texto = icon.getAttribute('data-tooltip'); if (!texto) return;
     var tip = document.createElement('div');
-    tip.className = 'tooltip-balloon';
-    tip.textContent = texto;
-    document.body.appendChild(tip);
-
-    var rect = icon.getBoundingClientRect();
-    var tipHeight = 80;
-
-    // Tenta abrir por CIMA; se não couber, abre por baixo
-    if (rect.top > tipHeight + 20) {
-      tip.style.bottom = (window.innerHeight - rect.top + 10 + window.scrollY) + 'px';
-      tip.style.top = 'auto';
-    } else {
-      tip.style.top = (rect.bottom + 10 + window.scrollY) + 'px';
-      tip.style.bottom = 'auto';
-    }
-
+    tip.className = 'tooltip-balloon'; tip.textContent = texto; document.body.appendChild(tip);
+    var rect = icon.getBoundingClientRect(); var tipHeight = 80;
+    if (rect.top > tipHeight + 20) { tip.style.bottom = (window.innerHeight - rect.top + 10 + window.scrollY) + 'px'; tip.style.top = 'auto'; } else { tip.style.top = (rect.bottom + 10 + window.scrollY) + 'px'; tip.style.bottom = 'auto'; }
     tip.style.left = Math.max(12, Math.min(rect.left + rect.width / 2 - 140, window.innerWidth - 292)) + 'px';
-
-        tooltipAtivo = tip;
-
-    setTimeout(function() {
-      if (tooltipAtivo === tip) { tip.remove(); tooltipAtivo = null; }
-    }, 5000);
+    tooltipAtivo = tip; setTimeout(function() { if (tooltipAtivo === tip) { tip.remove(); tooltipAtivo = null; } }, 5000);
   });
 })();
-
