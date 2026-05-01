@@ -6,6 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#000000">
+<link rel="manifest" href="manifest.json">
 <title>Ponto Digital — CRV/LAS</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
@@ -16,7 +17,6 @@
   <div class="orb"></div><div class="orb"></div><div class="orb"></div>
 </div>
 
-<!-- TELA DE LOGIN -->
 <div id="loginScreen">
   <div class="login-card">
     <div class="brand-icon" style="background: linear-gradient(145deg, var(--orange), var(--red));">⏱️</div>
@@ -31,26 +31,26 @@
       <option value="GESTOR">Gestor</option>
     </select>
     <div style="position:relative; margin-bottom:14px;">
-      <input type="password" id="loginPass" class="login-field" placeholder="Sua senha" autocomplete="off" style="padding-right:48px;">
-      <button type="button" onclick="toggleSenha()" id="eyeBtn" style="position:absolute; right:4px; top:50%; transform:translateY(-50%); background:none; border:none; color:rgba(235,235,245,.4); z-index:10;"><span id="eyeIcon">👁️</span></button>
+      <input type="password" id="loginPass" class="login-field" placeholder="A sua palavra-passe" autocomplete="off" style="padding-right:48px; margin-bottom:0;">
+      <button type="button" onclick="toggleSenha()" id="eyeBtn" style="position:absolute; right:4px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; font-size:1.2rem; color:rgba(235,235,245,.4); z-index:10; padding:10px;"><span id="eyeIcon">👁️</span></button>
     </div>
-    <div style="margin-bottom: 16px; text-align: left; display: flex; align-items: flex-start; gap: 8px;">
-      <input type="checkbox" id="lgpdCheck" style="accent-color: var(--blue);">
-      <label for="lgpdCheck" style="font-size: 0.75rem; color: var(--text-secondary);">Declaro que li e concordo com a recolha de dados laborais (LGPD).</label>
+    <div style="margin-bottom: 16px; text-align: left; display: flex; align-items: flex-start; gap: 8px; padding: 0 4px;">
+      <input type="checkbox" id="lgpdCheck" style="margin-top: 3px; width: 16px; height: 16px; accent-color: var(--blue); cursor: pointer;">
+      <label for="lgpdCheck" style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4; cursor: pointer;">
+        Declaro que li e concordo com a recolha de dados estritamente para fins laborais e de acesso ao sistema, conforme a <strong>LGPD</strong>.
+      </label>
     </div>
     <button class="login-btn" id="loginBtn" onclick="fazerLogin()" style="background:var(--orange);">Entrar</button>
     <div class="login-error" id="loginError"></div>
   </div>
 </div>
 
-<!-- LOADING -->
 <div id="ldScreen" class="hidden">
   <div class="ld-spinner" style="border-top-color: var(--orange);"></div>
   <div class="ld-text" id="ldText">A autenticar...</div>
 </div>
-<div id="ldBarTop" style="background: var(--orange);"></div>
+<div id="ldBarTop" style="background: var(--orange); box-shadow: 0 0 16px rgba(255,159,10,.5);"></div>
 
-<!-- APP PRINCIPAL -->
 <div id="mainApp" style="display:none;">
   <div class="top-bar">
     <div class="top-bar-row1">
@@ -62,71 +62,108 @@
     </div>
     <div class="top-bar-row2">
       <span class="badge badge-offline" id="badgeStatus">Offline</span>
-      <span class="badge badge-gestor" id="badgeGestor" style="display:none;">Gestor</span>
-      <span class="user-badge" id="userBadge"></span>
+      <span class="badge badge-gestor" id="badgeGestor" style="display:none; background:var(--purple-soft); color:var(--purple);">Gestor</span>
+      <span class="user-badge" id="userBadge" style="background:var(--orange-soft); color:var(--orange);"></span>
     </div>
   </div>
 
   <div class="container">
-    <!-- PAINEL OPERACIONAL (FUNCIONÁRIO) -->
     <div id="areaOperacional">
-      <div class="section-label">Validação Facial</div>
+      <div class="section-label">Validação Facial <span class="help-icon" data-tooltip="Tire uma foto nítida do seu rosto para validar a sua identidade neste registo.">?</span></div>
       <div class="ios-card" style="padding: 16px; text-align: center;">
-        <video id="videoEl" autoplay playsinline style="width:100%; max-width:240px; border-radius:16px;"></video>
-        <canvas id="canvasEl" style="display:none; width:100%; max-width:240px; border-radius:16px;"></canvas>
+        <video id="videoEl" autoplay playsinline style="width:100%; max-width:240px; border-radius:16px; margin:0 auto; display:block;"></video>
+        <canvas id="canvasEl" style="display:none; width:100%; max-width:240px; border-radius:16px; margin:0 auto;"></canvas>
         <div style="margin-top:16px; display:flex; justify-content:center; gap:10px;">
           <button class="cam-btn primary" id="btnCapture" onclick="capturePhoto()" style="background:var(--blue);">📸 Tirar Foto</button>
-          <button class="cam-btn" id="btnReset" onclick="resetCamera()" style="display:none;">🔄 Refazer</button>
+          <button class="cam-btn" id="btnReset" onclick="resetCamera()" style="display:none;">🔄 Refazer Foto</button>
         </div>
+        <div class="selfie-ok" id="selfieOk" style="display:none; color:var(--green); font-weight:700; margin-top:10px;">✅ Identidade Capturada</div>
       </div>
 
-      <div class="section-label">Localização</div>
+      <div class="section-label">Controle de Localização</div>
       <div class="ios-card">
         <div class="ios-card-row">
-          <div class="ios-icon-bg" id="geoIconBg">🛰️</div>
-          <div class="ios-row-content"><div class="ios-row-title" id="geoValue">GPS...</div><div class="ios-row-sub" id="geoDist">Calibrando</div></div>
+          <div class="ios-icon-bg" id="geoIconBg" style="background:var(--surface-3); color:var(--text-tertiary);"><span id="geoIcon">🛰️</span></div>
+          <div class="ios-row-content">
+            <div class="ios-row-title" id="geoValue">Buscando satélites...</div>
+            <div class="ios-row-sub" id="geoDist">Aguarde a calibração do GPS</div>
+          </div>
         </div>
+
         <div class="ios-card-row">
           <div class="ios-icon-bg" style="background:var(--orange-soft); color:var(--orange);">🚗</div>
-          <div class="ios-row-content"><div class="ios-row-title">Modo Viagem</div></div>
-          <div class="apple-switch" id="viagemSwitchToggle" onclick="toggleViagem()"><div class="apple-switch-track"><div class="apple-switch-thumb"></div></div></div>
+          <div class="ios-row-content">
+            <div class="ios-row-title">Modo Viagem <span class="help-icon" data-tooltip="Ative apenas se estiver na estrada, fora de Ibicuí. O sistema desativará o bloqueio de GPS.">?</span></div>
+          </div>
+          <div class="apple-switch" id="viagemSwitchToggle" onclick="toggleViagem()">
+            <div class="apple-switch-track"><div class="apple-switch-thumb"></div></div>
+          </div>
         </div>
-        <div class="ios-card-row hidden" id="viagemDestinoContainer"><input type="text" id="viagemDestino" class="form-field" placeholder="Destino?"></div>
+
+        <div class="ios-card-row hidden" id="viagemDestinoContainer" style="background:var(--surface-2);">
+          <input type="text" id="viagemDestino" class="form-field" placeholder="Para onde está a viajar? (Ex: Boa Nova)" style="background:transparent; border:none; padding:0; font-size:.9rem; box-shadow:none;">
+        </div>
       </div>
 
-      <div class="section-label">Ação</div>
+      <div class="section-label">Selecione a Ação</div>
       <div class="ios-card">
-        <label class="ios-card-row radio-row" onclick="selectType(this, 'ENTRADA')">🟢 Entrada<input type="radio" name="pontoType" value="ENTRADA"><div class="radio-custom"></div></label>
-        <label class="ios-card-row radio-row" onclick="selectType(this, 'SAÍDA ALMOÇO')">🟠 Almoço<input type="radio" name="pontoType" value="SAÍDA ALMOÇO"><div class="radio-custom"></div></label>
-        <label class="ios-card-row radio-row" onclick="selectType(this, 'RETORNO ALMOÇO')">🔵 Retorno<input type="radio" name="pontoType" value="RETORNO ALMOÇO"><div class="radio-custom"></div></label>
-        <label class="ios-card-row radio-row" onclick="selectType(this, 'SAÍDA')">🔴 Saída<input type="radio" name="pontoType" value="SAÍDA"><div class="radio-custom"></div></label>
+        <label class="ios-card-row radio-row" onclick="selectType(this, 'ENTRADA')">
+          <div class="ios-row-content ios-row-title">🟢 Entrada</div>
+          <input type="radio" name="pontoType" value="ENTRADA">
+          <div class="radio-custom"></div>
+        </label>
+        <label class="ios-card-row radio-row" onclick="selectType(this, 'SAÍDA ALMOÇO')">
+          <div class="ios-row-content ios-row-title">🟠 Saída para Almoço</div>
+          <input type="radio" name="pontoType" value="SAÍDA ALMOÇO">
+          <div class="radio-custom"></div>
+        </label>
+        <label class="ios-card-row radio-row" onclick="selectType(this, 'RETORNO ALMOÇO')">
+          <div class="ios-row-content ios-row-title">🔵 Retorno do Almoço</div>
+          <input type="radio" name="pontoType" value="RETORNO ALMOÇO">
+          <div class="radio-custom"></div>
+        </label>
+        <label class="ios-card-row radio-row" onclick="selectType(this, 'SAÍDA')">
+          <div class="ios-row-content ios-row-title">🔴 Saída (Fim do Expediente)</div>
+          <input type="radio" name="pontoType" value="SAÍDA">
+          <div class="radio-custom"></div>
+        </label>
       </div>
-      <button class="submit-btn" id="submitBtn" onclick="registrarPonto()" disabled style="background:var(--green);">Confirmar Registo</button>
+
+      <button class="submit-btn" id="submitBtn" onclick="registrarPonto()" disabled style="margin-top:20px; background:var(--green); font-size:1.05rem;">Confirmar Registo</button>
+
+      <div class="section-label" style="margin-top:30px;">O seu histórico de hoje</div>
+      <div class="timeline-container" id="timelineList"></div>
     </div>
 
-    <!-- PAINEL GESTOR -->
     <div id="gestorSection" style="display:none; margin-top:20px;">
       <div class="section-label">Visão Geral de Hoje</div>
       <div class="stats-grid">
-        <div class="stat-card blue" onclick="abrirLista('presentes')"><span class="s-icon">👥</span><div class="s-label">Presentes</div><div class="s-value" id="statPresentes">0</div></div>
-        <div class="stat-card red" onclick="abrirLista('alertas')"><span class="s-icon">⚠️</span><div class="s-label">Alertas GPS</div><div class="s-value" id="statAlertas">0</div></div>
-        <div class="stat-card orange" onclick="abrirLista('viagem')"><span class="s-icon">🚗</span><div class="s-label">Em Viagem</div><div class="s-value" id="statViagem">0</div></div>
+        <div class="stat-card blue" onclick="abrirLista('presentes')"><span class="s-icon">👥</span><div class="s-label">Presentes</div><div class="s-value blue" id="statPresentes">0</div></div>
+        <div class="stat-card red" onclick="abrirLista('alertas')"><span class="s-icon">⚠️</span><div class="s-label">Alertas GPS</div><div class="s-value red" id="statAlertas">0</div></div>
+        <div class="stat-card orange" onclick="abrirLista('viagem')"><span class="s-icon">🚗</span><div class="s-label">Em Viagem</div><div class="s-value orange" id="statViagem">0</div></div>
       </div>
+
       <button class="submit-btn" onclick="abrirPainel()" style="background:var(--blue); margin-bottom:24px;">Abrir Painel de Controlo</button>
 
-      <div class="section-label">Atividade Recente</div>
-      <div class="timeline-container" id="timelineGestor" style="margin-bottom:24px;"></div>
+      <div class="section-label">Atividade Recente da Equipa</div>
+      <div class="timeline-container" id="timelineGestor" style="margin-bottom:24px; max-height: 250px; overflow-y: auto;">
+         <p class="empty-text">A sincronizar atividades...</p>
+      </div>
 
-      <div class="relatorio-switch-row">
-        <span class="relatorio-switch-label">Gerar Histórico Mensal</span>
-        <button class="cam-btn primary" onclick="abrirRelatorio()" style="background:var(--blue);">Gerar PDF</button>
+      <div class="relatorio-switch-row" id="gestorReportRow">
+        <span class="relatorio-switch-label" style="display:flex; flex-direction:column;">
+          <span>Gerar Histórico Mensal <span class="help-icon" data-tooltip="Calcula horas extras e faltas do mês inteiro para a equipa.">?</span></span>
+          <span style="font-size:0.7rem; color:var(--text-tertiary); font-weight:400; margin-top:2px;">Exportar PDF para a contabilidade</span>
+        </span>
+        <button class="cam-btn primary" onclick="abrirRelatorio()" style="background:var(--blue); padding:8px 16px;">Gerar PDF</button>
       </div>
     </div>
+
   </div>
 </div>
 
-<!-- MODAIS -->
-<div class="modal-full" id="listaRapidaModal">
+<!-- Modal Listas Rápidas (Drill-down) -->
+<div class="modal-full" id="listaRapidaModal" style="z-index: 5500;">
   <div class="modal-bar"><h2 id="listaRapidaTitulo">Lista</h2><button class="modal-close" onclick="fecharLista()">✕</button></div>
   <div class="modal-body" id="listaRapidaBody"></div>
 </div>
@@ -136,14 +173,52 @@
   <div class="modal-body" id="painelBody"></div>
 </div>
 
+<div class="modal-full" id="justModal" style="z-index:6000;">
+  <div class="modal-bar"><h2>📝 Justificar Falta</h2><button class="modal-close" onclick="fecharJustificativa()">✕</button></div>
+  <div class="modal-body">
+    <div class="form-card">
+      <p style="color:var(--text-secondary); margin-bottom:16px; font-size:.9rem;">Justificando ausência de: <strong id="justNome" style="color:var(--text-primary);"></strong></p>
+      <input type="hidden" id="justNomeInput">
+      <div class="form-group">
+        <label class="form-label">Motivo da Justificativa <span class="help-icon" data-tooltip="Escreva o motivo (Ex: Atestado médico, esquecimento do app). Isso abonará a falta no PDF.">?</span></label>
+        <input type="text" id="justMotivo" class="form-field" placeholder="Ex: Atestado Médico">
+      </div>
+      <button class="submit-btn" id="btnSalvarJust" onclick="salvarJustificativa()" style="background:var(--orange);">Gravar Justificativa</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-full" id="relModal">
-  <div class="modal-bar"><h2>📊 Histórico Mensal</h2><div><button class="cam-btn primary" onclick="window.print()">Imprimir</button><button class="modal-close" onclick="fecharRelatorio()">✕</button></div></div>
+  <div class="modal-bar">
+    <h2>📊 Histórico Mensal</h2>
+    <div style="display:flex; gap:10px;">
+      <button class="cam-btn primary" onclick="window.print()" style="padding:6px 12px; background:var(--blue); border:none;"><span style="color:#fff;">Imprimir</span></button>
+      <button class="modal-close" onclick="fecharRelatorio()">✕</button>
+    </div>
+  </div>
   <div class="modal-body" id="relBody"></div>
 </div>
 
-<div class="success-overlay" id="successOverlay"><div class="success-icon" id="successIcon">✅</div><div class="success-msg" id="successMsg">Ok!</div><div class="success-detail" id="successDetail"></div></div>
+<div class="success-overlay" id="successOverlay">
+  <div class="success-icon" id="successIcon">✅</div>
+  <div class="success-msg" id="successMsg">Registo Guardado!</div>
+  <div class="success-detail" id="successDetail"></div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script src="app.js"></script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.register('sw.js').then(function(registration) {
+        console.log('ServiceWorker ligado com sucesso!');
+      }, function(err) {
+        console.log('Erro no ServiceWorker: ', err);
+      });
+    });
+  }
+</script>
+
 </body>
 </html>
