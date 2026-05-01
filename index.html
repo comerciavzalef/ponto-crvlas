@@ -68,7 +68,7 @@
   </div>
 
   <div class="container">
-
+    <!-- PAINEL OPERACIONAL (FUNCIONÁRIO) -->
     <div id="areaOperacional">
       <div class="section-label">Validação Facial <span class="help-icon" data-tooltip="Tire uma foto nítida do seu rosto para validar sua identidade neste registro.">?</span></div>
       <div class="ios-card" style="padding: 16px; text-align: center;">
@@ -90,7 +90,6 @@
             <div class="ios-row-sub" id="geoDist">Aguarde a calibração do GPS</div>
           </div>
         </div>
-
         <div class="ios-card-row">
           <div class="ios-icon-bg" style="background:var(--orange-soft); color:var(--orange);">🚗</div>
           <div class="ios-row-content">
@@ -100,7 +99,6 @@
             <div class="apple-switch-track"><div class="apple-switch-thumb"></div></div>
           </div>
         </div>
-
         <div class="ios-card-row hidden" id="viagemDestinoContainer" style="background:var(--surface-2);">
           <input type="text" id="viagemDestino" class="form-field" placeholder="Para onde está viajando? (Ex: Boa Nova)" style="background:transparent; border:none; padding:0; font-size:.9rem; box-shadow:none;">
         </div>
@@ -149,9 +147,16 @@
 
       <button class="submit-btn" onclick="abrirPainel()" style="background:var(--blue); margin-bottom:24px;">Abrir Painel de Controle</button>
 
+      <!-- ATIVIDADE RECENTE -->
       <div class="section-label">Atividade Recente da Equipe</div>
       <div class="timeline-container" id="timelineGestor" style="margin-bottom:24px; max-height: 250px; overflow-y: auto;">
          <p class="empty-text">Sincronizando atividades...</p>
+      </div>
+
+      <!-- TERMÔMETRO DE HORAS -->
+      <div class="section-label">🌡️ Termômetro de Horas Extras (Semanal)</div>
+      <div id="topHorasWidget" style="margin-bottom:24px;">
+         <div class="ios-card" style="padding:16px; text-align:center;"><div class="ld-spinner" style="margin:0 auto 10px; border-top-color:var(--orange);"></div><p style="color:var(--text-tertiary); font-size:0.8rem;">Calculando banco de horas...</p></div>
       </div>
 
       <div class="relatorio-switch-row" id="gestorReportRow">
@@ -166,6 +171,7 @@
   </div>
 </div>
 
+<!-- MODAIS -->
 <div class="modal-full" id="listaRapidaModal" style="z-index: 5500;">
   <div class="modal-bar"><h2 id="listaRapidaTitulo">Lista</h2><button class="modal-close" onclick="fecharLista()">✕</button></div>
   <div class="modal-body" id="listaRapidaBody"></div>
@@ -183,7 +189,7 @@
       <p style="color:var(--text-secondary); margin-bottom:16px; font-size:.9rem;">Justificando ausência de: <strong id="justNome" style="color:var(--text-primary);"></strong></p>
       <input type="hidden" id="justNomeInput">
       <div class="form-group">
-        <label class="form-label">Motivo da Justificativa <span class="help-icon" data-tooltip="Escreva o motivo (Ex: Atestado médico, esquecimento do app). Isso abonará a falta no PDF.">?</span></label>
+        <label class="form-label">Motivo da Justificativa</label>
         <input type="text" id="justMotivo" class="form-field" placeholder="Ex: Atestado Médico">
       </div>
       <button class="submit-btn" id="btnSalvarJust" onclick="salvarJustificativa()" style="background:var(--orange);">Salvar Justificativa</button>
