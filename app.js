@@ -3,48 +3,44 @@
 //  Grupo Carlos Vaz — CRV/LAS
 // ══════════════════════════════════════════════════════════════
 
-// =====================================================================
-// 🛡️ MÓDULO DE TELEMETRIA: CONEXÃO COM A CENTRAL DO DESENVOLVEDOR (SAAS)
-// =====================================================================
+// ============================================================
+//  TELEMETRY CLIENT — Cole no try/catch dos PWAs de ponta
+// ============================================================
+async function enviarLogParaCentral({ idCliente, aplicativo, usuario, dispositivo, tipoLog, mensagemErro }) {
+  const URL_CENTRAL = 'https://script.google.com/macros/s/AKfycbzqjZtyCn7X1lWQBSRYLwW-MijJN53YLPoHJrjjBh5y6P1kTaBATNpAV13KV9OgNYPx/exec';
+  const API_KEY     = 'ee91297b-685b-4ae4-b131-8434841c882e';
 
-// 1. IDENTIDADE DO CLIENTE (Altere apenas isto para cada empresa nova)
-const APP_CONFIG = {
-    idCliente: "CRV_MATRIZ",        
-    aplicativo: "PONTO_APP",     
-    urlCentral: "https://script.google.com/macros/s/AKfycbx7YBpAS0GwwcvnKA0_2GjbPSYLpFan1XcLjyHkCJl8PZ99U3F5E9-1kyaOPgdTXw1-/exec", // A URL que o Google vai te dar
-    apiKey: "ee91297b-685b-4ae4-b131-8434841c882e" 
-};
+  try {
+    await fetch(URL_CENTRAL, {
+      method: 'POST',
+      // text/plain → evita preflight OPTIONS (Apps Script não responde OPTIONS)
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        apiKey: API_KEY,
+        idCliente, aplicativo, usuario, dispositivo, tipoLog, mensagemErro
+      })
+    });
+  } catch (e) {
+    // Falha de telemetria nunca deve quebrar o app de ponta
+    console.warn('[Telemetria] Falhou silenciosamente:', e);
+  }
+}
 
-// 2. O "ESPIÃO" (Não precisa alterar nada daqui para baixo)
-window.addEventListener('error', function(event) {
-    // 2.1 - Descobre quem está usando (Ajuste se o seu select de usuário tiver outro ID)
-    let usuarioLogado = "Não identificado";
-    try {
-        const campoUsuario = document.getElementById("usuarioSelect"); // ID do campo do Luiz, Tassio, etc.
-        if (campoUsuario) usuarioLogado = campoUsuario.value;
-    } catch(e) {}
+// EXEMPLO DE USO no try/catch real do app:
+try {
+  // ... lógica de negócio ...
+} catch (err) {
+  enviarLogParaCentral({
+    idCliente:    'crv',
+    aplicativo:   'Ponto',
+    usuario:      sessaoAtual.nome,
+    dispositivo:  navigator.userAgent,
+    tipoLog:      'ERRO',
+    mensagemErro: `${err.message}\n${err.stack || ''}`
+  });
+  // continua tratamento normal do erro no app
+}
 
-    // 2.2 - Empacota o erro
-    const fofoca = {
-        idCliente: APP_CONFIG.idCliente,
-        aplicativo: APP_CONFIG.aplicativo,
-        usuario: usuarioLogado,
-        dispositivo: navigator.userAgent, // Pega o modelo do celular (Ex: Poco X7, iPhone)
-        tipoLog: "ERRO CRÍTICO",
-        mensagemErro: event.message + " | Linha: " + event.lineno
-    };
-
-    // 2.3 - Envia silenciosamente para a sua Planilha Mestra
-    fetch(APP_CONFIG.urlCentral, {
-        method: 'POST',
-        mode: 'no-cors', // O 'no-cors' é essencial para o envio ser invisível e não travar o celular
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(fofoca)
-    }).catch(err => console.log("A Central está offline, erro não enviado."));
-});
-// =====================================================================
 
 var API_URL = 'https://script.google.com/macros/s/AKfycbzw_DCKo-0c3EMxWHgajCs8FxVYxtghYXSerldjBaTSu5lKsKqUYr5-vOLTYOuYsUFRUg/exec';
 var SESSION_KEY = 'cv_ponto_sessao';
