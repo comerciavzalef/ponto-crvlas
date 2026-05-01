@@ -3,6 +3,48 @@
 //  Grupo Carlos Vaz — CRV/LAS
 // ══════════════════════════════════════════════════════════════
 
+// =====================================================================
+// 🛡️ MÓDULO DE TELEMETRIA: CONEXÃO COM A CENTRAL DO DESENVOLVEDOR (SAAS)
+// =====================================================================
+
+// 1. IDENTIDADE DO CLIENTE (Altere apenas isto para cada empresa nova)
+const APP_CONFIG = {
+    idCliente: "CRV_BAHIA",        // O "RG" da empresa na sua planilha mestra
+    aplicativo: "PONTO_APP",     // Identifica qual app está rodando (Estoque ou Ponto)
+    urlCentral: "COLE_AQUI_A_URL_DO_SEU_NOVO_APPS_SCRIPT" // A URL que a outra IA vai gerar na Fase 1
+};
+
+// 2. O "ESPIÃO" (Não precisa alterar nada daqui para baixo)
+window.addEventListener('error', function(event) {
+    // 2.1 - Descobre quem está usando (Ajuste se o seu select de usuário tiver outro ID)
+    let usuarioLogado = "Não identificado";
+    try {
+        const campoUsuario = document.getElementById("usuarioSelect"); // ID do campo do Luiz, Tassio, etc.
+        if (campoUsuario) usuarioLogado = campoUsuario.value;
+    } catch(e) {}
+
+    // 2.2 - Empacota o erro
+    const fofoca = {
+        idCliente: APP_CONFIG.idCliente,
+        aplicativo: APP_CONFIG.aplicativo,
+        usuario: usuarioLogado,
+        dispositivo: navigator.userAgent, // Pega o modelo do celular (Ex: Poco X7, iPhone)
+        tipoLog: "ERRO CRÍTICO",
+        mensagemErro: event.message + " | Linha: " + event.lineno
+    };
+
+    // 2.3 - Envia silenciosamente para a sua Planilha Mestra
+    fetch(APP_CONFIG.urlCentral, {
+        method: 'POST',
+        mode: 'no-cors', // O 'no-cors' é essencial para o envio ser invisível e não travar o celular
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(fofoca)
+    }).catch(err => console.log("A Central está offline, erro não enviado."));
+});
+// =====================================================================
+
 var API_URL = 'https://script.google.com/macros/s/AKfycbzw_DCKo-0c3EMxWHgajCs8FxVYxtghYXSerldjBaTSu5lKsKqUYr5-vOLTYOuYsUFRUg/exec';
 var SESSION_KEY = 'cv_ponto_sessao';
 var RAIO_LIMITE = 50; 
