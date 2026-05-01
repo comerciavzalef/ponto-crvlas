@@ -1,5 +1,5 @@
 // ══════════════════════════════════════════════════════════════
-//  PONTO DIGITAL — app.js v10.0 (Latência Zero & Equipe Fix)
+//  PONTO DIGITAL — app.js v11.0 (Top Horas, WhatsApp & Zero Latency)
 //  Grupo Carlos Vaz — CRV/LAS
 // ══════════════════════════════════════════════════════════════
 
@@ -10,8 +10,10 @@ var LAT_EMPRESA = -14.842472;
 var LNG_EMPRESA = -39.987250;
 
 var CREDS_OFFLINE = {
-  'LUCAS':  '1e79f09abad6c8321bf6a1dee19aa4949ce95fa3f962361869c406555ade9062', 'TASSIO': '53c822e4be542a847100324d05458d7c155d9a0a3ee2c8ea6a621c3b426b123d',
-  'AMARAL': 'd16bcb871bbfe495833cee0fd592bbf47540fee7801ade3d8ccf7b97372ad042', 'ALEX':   'e3f961a998c170860de4cab5c8f9548522a1938d6599cf40f827333b503d8eed',
+  'LUCAS':  '1e79f09abad6c8321bf6a1dee19aa4949ce95fa3f962361869c406555ade9062', 
+  'TASSIO': '53c822e4be542a847100324d05458d7c155d9a0a3ee2c8ea6a621c3b426b123d',
+  'AMARAL': 'd16bcb871bbfe495833cee0fd592bbf47540fee7801ade3d8ccf7b97372ad042', 
+  'ALEX':   'e3f961a998c170860de4cab5c8f9548522a1938d6599cf40f827333b503d8eed',
   'GESTOR': '704bd714166d21ac85ed8a26fbde6b9be2d94981934305be4a7915a8bbd0c157'
 };
 
@@ -233,7 +235,7 @@ function incrementSession() { var key = 'p_' + sessao.nome + '_sc'; var c = pars
 
 function syncDados() { fetch(API_URL + '?sync=1').then(function (r) { return r.json(); }).then(function (d) { setBadge(true); if (d.timeline) renderTimeline(d.timeline, 'timelineList'); }).catch(function () { setBadge(false); }); }
 
-// 🔍 DRILL-DOWN: LISTAS ESPECÍFICAS DOS CARDS DO GESTOR
+// 🔍 DRILL-DOWN: LISTAS ESPECÍFICAS DOS CARDS (COM INTEGRAÇÃO WHATSAPP)
 function abrirLista(tipo) {
   if (!dadosGestorCache) { toast("Aguarde a sincronização de dados..."); return; }
   var titulo = document.getElementById('listaRapidaTitulo');
@@ -264,16 +266,27 @@ function abrirLista(tipo) {
     dadosGestorCache.alertas.forEach(a => {
       html += `<div class="ios-card-row" style="background:var(--surface-1); border-radius:12px; margin-bottom:8px; border:1px solid var(--border);"><div class="ios-icon-bg" style="background:var(--red-soft); color:var(--red);">📍</div><div class="ios-row-content"><div class="ios-row-title">${a.nome}</div><div class="ios-row-sub">Fora do limite na ${a.tipo}</div></div><div class="tl-hora">${a.hora}</div></div>`;
     });
-    if(!html) html = '<p class="empty-text">Tudo regular hoje.</p>';
+    if(!html) html = '<p class="empty-text">Tudo regular hoje. Nenhum bloqueio de GPS.</p>';
   } else if (tipo === 'pendentes') {
     titulo.textContent = "⏳ Pendentes (Sem Registro)";
+    
+    // Lógica para verificar se passou das 08:10 da manhã
+    var agora = new Date();
+    var minutosHoje = (agora.getHours() * 60) + agora.getMinutes();
+    var passouDaHora = minutosHoje > 490; // 490 = 08h10min
+    
     Object.keys(dadosGestorCache.colaboradores).forEach(n => {
       var c = dadosGestorCache.colaboradores[n];
       if(!c.entrada && !c.justificativa) {
-        html += `<div class="ios-card-row" style="background:var(--surface-1); border-radius:12px; margin-bottom:8px; border:1px solid var(--border);"><div class="ios-icon-bg" style="background:var(--surface-3); color:var(--text-tertiary);">⏳</div><div class="ios-row-content"><div class="ios-row-title">${n}</div><div class="ios-row-sub">Ainda não registrou o ponto hoje</div></div></div>`;
+        var btnZap = '';
+        if (passouDaHora) {
+            var msgZap = encodeURIComponent(`Fala ${n}, bom dia! O sistema acusou que você ainda não registrou o ponto de entrada hoje. Tudo certo por aí?`);
+            btnZap = `<a href="https://wa.me/?text=${msgZap}" target="_blank" class="cam-btn" style="padding:6px 12px; background:var(--green-soft); color:var(--green); text-decoration:none; font-size:0.75rem; font-weight:700;">💬 Cobrar</a>`;
+        }
+        html += `<div class="ios-card-row" style="background:var(--surface-1); border-radius:12px; margin-bottom:8px; border:1px solid var(--border); padding-right:10px;"><div class="ios-icon-bg" style="background:var(--surface-3); color:var(--text-tertiary);">⏳</div><div class="ios-row-content"><div class="ios-row-title">${n}</div><div class="ios-row-sub">Ainda não registrou o ponto hoje</div></div>${btnZap}</div>`;
       }
     });
-    if(!html) html = '<p class="empty-text">Todos os colaboradores já registraram o ponto.</p>';
+    if(!html) html = '<p class="empty-text">Todos os colaboradores já registraram o ponto hoje.</p>';
   }
 
   body.innerHTML = html;
@@ -303,6 +316,8 @@ function syncGestor() {
     renderTimeline(todasAtividades.slice(0, 10), 'timelineGestor');
 
     if (!avisoViagemFeito && emViagem.length > 0) { toast("📍 Atenção: " + emViagem.join(", ") + " na estrada hoje."); avisoViagemFeito = true; }
+    
+    carregarTopHoras(); // Roda a métrica das Horas Extras
   }).catch(function () { });
 }
 
@@ -315,6 +330,36 @@ function renderTimeline(items, targetId) {
     html += '<div class="timeline-item"><span class="tl-hora">' + it.hora + '</span><span class="tl-nome">' + it.nome + '</span><span class="tl-tipo ' + cls + '">' + it.tipo + '</span></div>'; 
   }); 
   el.innerHTML = html;
+}
+
+// 🌡️ MOTOR DO TERMÔMETRO (Roda silencioso em 2º plano)
+function carregarTopHoras() {
+  fetch(API_URL + '?relatorio=1&senha=' + encodeURIComponent(sessao.senha))
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+     if(d.erro) return;
+     var comExtras = d.colaboradores.filter(function(c) { return c.horasExtras !== '00:00'; });
+     comExtras.sort(function(a,b) { return b.horasExtras.localeCompare(a.horasExtras); });
+     var top = comExtras.slice(0, 3);
+     if(top.length === 0) {
+        document.getElementById('topHorasWidget').innerHTML = '<div class="ios-card" style="padding:16px; text-align:center;"><p style="color:var(--green); font-weight:600; margin:0;">✅ Nenhuma hora extra acumulada</p></div>';
+        return;
+     }
+     var h = '<div class="ios-card" style="margin-bottom:0;">';
+     top.forEach(function(c, idx) {
+        var medal = idx === 0 ? '🥇' : (idx === 1 ? '🥈' : '🥉');
+        h += `<div class="ios-card-row">
+                <div class="ios-icon-bg" style="background:var(--orange-soft); color:var(--orange); font-size:1.4rem;">${medal}</div>
+                <div class="ios-row-content">
+                  <div class="ios-row-title">${c.nome}</div>
+                  <div class="ios-row-sub">Acumulado mensal</div>
+                </div>
+                <div class="tl-hora" style="color:var(--orange); font-size:1.1rem;">${c.horasExtras}</div>
+              </div>`;
+     });
+     h += '</div>';
+     document.getElementById('topHorasWidget').innerHTML = h;
+  });
 }
 
 function abrirPainel() { document.getElementById('painelModal').classList.add('show'); carregarPainel(); }
