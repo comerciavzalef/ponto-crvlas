@@ -1,5 +1,5 @@
 // ══════════════════════════════════════════════════════════════
-//  PONTO DIGITAL — app.js v10.0 (Latência Zero & Drill-down)
+//  PONTO DIGITAL — app.js v10.0 (Latência Zero & Equipe Fix)
 //  Grupo Carlos Vaz — CRV/LAS
 // ══════════════════════════════════════════════════════════════
 
@@ -10,10 +10,8 @@ var LAT_EMPRESA = -14.842472;
 var LNG_EMPRESA = -39.987250;
 
 var CREDS_OFFLINE = {
-  'LUCAS':  '1e79f09abad6c8321bf6a1dee19aa4949ce95fa3f962361869c406555ade9062', 
-  'TASSIO': '53c822e4be542a847100324d05458d7c155d9a0a3ee2c8ea6a621c3b426b123d',
-  'AMARAL': 'd16bcb871bbfe495833cee0fd592bbf47540fee7801ade3d8ccf7b97372ad042', 
-  'ALEX':   'e3f961a998c170860de4cab5c8f9548522a1938d6599cf40f827333b503d8eed',
+  'LUCAS':  '1e79f09abad6c8321bf6a1dee19aa4949ce95fa3f962361869c406555ade9062', 'TASSIO': '53c822e4be542a847100324d05458d7c155d9a0a3ee2c8ea6a621c3b426b123d',
+  'AMARAL': 'd16bcb871bbfe495833cee0fd592bbf47540fee7801ade3d8ccf7b97372ad042', 'ALEX':   'e3f961a998c170860de4cab5c8f9548522a1938d6599cf40f827333b503d8eed',
   'GESTOR': '704bd714166d21ac85ed8a26fbde6b9be2d94981934305be4a7915a8bbd0c157'
 };
 
@@ -24,7 +22,7 @@ var geoAtual = { lat: 0, lng: 0, dist: null, dentro: false };
 var refreshInterval = null;
 var stream = null;
 var avisoViagemFeito = false; 
-var dadosGestorCache = null; // Cache para o Drill-down
+var dadosGestorCache = null; 
 
 (function () {
   var s = localStorage.getItem(SESSION_KEY);
@@ -52,7 +50,6 @@ async function fazerLogin() {
 
   try {
     var senhaHash = await gerarHash(pass);
-
     fetch(API_URL, { 
       method: 'POST', 
       headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
@@ -77,8 +74,9 @@ async function fazerLogin() {
         err.textContent = 'Sem conexão e credenciais inválidas'; shakeLogin(); 
       }
     }).finally(function () { btn.disabled = false; btn.textContent = 'Entrar'; });
+
   } catch(e) {
-    err.textContent = 'Erro no sistema de segurança'; shakeLogin();
+    err.textContent = 'Erro de segurança'; shakeLogin();
     btn.disabled = false; btn.textContent = 'Entrar';
   }
 }
@@ -124,7 +122,7 @@ function iniciarApp() {
     document.getElementById('gestorSection').style.display = 'none';
   }
 
-  loadSequence([ { t: 'A autenticar...', p: 20 }, { t: 'A preparar módulo...', p: 50 }, { t: 'A calibrar GPS...', p: 80 }, { t: 'Pronto!', p: 100 } ], function () {
+  loadSequence([ { t: 'Autenticando...', p: 20 }, { t: 'Preparando módulo...', p: 50 }, { t: 'Calibrando GPS...', p: 80 }, { t: 'Pronto!', p: 100 } ], function () {
     document.getElementById('ldScreen').classList.add('hidden');
     if (!isGestor) { initCamera(); initGeo(); }
     syncDados(); refreshInterval = setInterval(function () { syncDados(); if (isGestor) syncGestor(); }, 300000);
@@ -145,7 +143,7 @@ function initGeo() {
   if (!navigator.geolocation) { updateGeoUI('GPS indisponível', 'red', 'Não é possível verificar a localização.'); return; }
   navigator.geolocation.watchPosition(function (pos) {
     geoAtual.lat = pos.coords.latitude; geoAtual.lng = pos.coords.longitude; geoAtual.dist = haversine(geoAtual.lat, geoAtual.lng, LAT_EMPRESA, LNG_EMPRESA); geoAtual.dentro = geoAtual.dist <= RAIO_LIMITE;
-    var txt = geoAtual.dentro ? 'Ponto Liberado' : 'Registo Bloqueado'; 
+    var txt = geoAtual.dentro ? 'Ponto Liberado' : 'Registro Bloqueado'; 
     var cls = geoAtual.dentro ? 'green' : 'red'; 
     var sub = geoAtual.dentro ? 'Dentro do perímetro da CRV/LAS.' : 'Fora do alcance (' + Math.round(geoAtual.dist) + 'm).';
     updateGeoUI(txt, cls, sub); checkSubmit();
@@ -180,7 +178,7 @@ function toggleViagemLogic(isViagem) {
   } else { 
     container.classList.add('hidden'); 
     document.getElementById('viagemDestino').value = ''; 
-    var txt = geoAtual.dentro ? 'Ponto Liberado' : 'Registo Bloqueado'; 
+    var txt = geoAtual.dentro ? 'Ponto Liberado' : 'Registro Bloqueado'; 
     var cls = geoAtual.dentro ? 'green' : 'red'; 
     var sub = geoAtual.dentro ? 'Dentro do perímetro da CRV/LAS.' : 'Fora do alcance (' + Math.round(geoAtual.dist) + 'm).';
     updateGeoUI(txt, cls, sub); 
@@ -188,10 +186,7 @@ function toggleViagemLogic(isViagem) {
   checkSubmit();
 }
 
-function selectType(labelEl, tipo) { 
-  tipoSelecionado = tipo; 
-  checkSubmit(); 
-}
+function selectType(labelEl, tipo) { tipoSelecionado = tipo; checkSubmit(); }
 
 function checkSubmit() {
   var isGestor = sessao && sessao.nivel === 'gestor'; 
@@ -206,14 +201,14 @@ function checkSubmit() {
   document.getElementById('submitBtn').disabled = !(selfieData && tipoSelecionado && geoOk);
 }
 
-// ⚡ LATÊNCIA ZERO NO REGISTRO
+// ⚡ LATÊNCIA ZERO NO REGISTRO (Optimistic UI)
 function registrarPonto() {
-  var btn = document.getElementById('submitBtn'); btn.disabled = true;
+  var btn = document.getElementById('submitBtn'); btn.disabled = true; btn.textContent = 'Enviando...';
   var isViagem = document.getElementById('viagemSwitchToggle').classList.contains('on'); 
   var destinoText = document.getElementById('viagemDestino').value.trim();
   
-  // Resposta Otimista (Instantânea)
-  showSuccess({ dentroDoRaio: true, mensagem: 'A enviar Registo...', hora: '--:--', statusGeo: 'A sincronizar em 2º plano' });
+  // Resposta Otimista Imediata
+  showSuccess({ dentroDoRaio: true, mensagem: 'Enviando Registro...', hora: '--:--', statusGeo: 'Sincronizando em 2º plano' });
   
   var payload = { nome: sessao.nome, tipo: tipoSelecionado, selfie: selfieData, lat: geoAtual.lat, lng: geoAtual.lng, dispositivo: navigator.userAgent.substring(0, 60), ip: '', viagem: isViagem, destino: destinoText };
   
@@ -223,10 +218,10 @@ function registrarPonto() {
   .then(function (r) { return r.json(); })
   .then(function (d) { 
     if (d.status === 'ok') { incrementSession(); syncDados(); } 
-  }).catch(function () { toast('Registo local. A sincronizar...'); });
+  }).catch(function () { toast('Registro local. Sincronizando...'); });
 }
 
-function showSuccess(d) { document.getElementById('successIcon').textContent = d.dentroDoRaio ? '✅' : '⚠️'; document.getElementById('successMsg').textContent = d.mensagem || 'Registo Guardado!'; document.getElementById('successDetail').textContent = d.hora + ' • ' + d.statusGeo; var ov = document.getElementById('successOverlay'); ov.classList.add('show'); setTimeout(function () { ov.classList.remove('show'); }, 3000); }
+function showSuccess(d) { document.getElementById('successIcon').textContent = d.dentroDoRaio ? '✅' : '⚠️'; document.getElementById('successMsg').textContent = d.mensagem || 'Registro Salvo!'; document.getElementById('successDetail').textContent = d.hora + ' • ' + d.statusGeo; var ov = document.getElementById('successOverlay'); ov.classList.add('show'); setTimeout(function () { ov.classList.remove('show'); }, 3000); }
 function resetAfterSubmit() { 
   resetCamera(); 
   tipoSelecionado = ''; 
@@ -238,7 +233,7 @@ function incrementSession() { var key = 'p_' + sessao.nome + '_sc'; var c = pars
 
 function syncDados() { fetch(API_URL + '?sync=1').then(function (r) { return r.json(); }).then(function (d) { setBadge(true); if (d.timeline) renderTimeline(d.timeline, 'timelineList'); }).catch(function () { setBadge(false); }); }
 
-// 🔍 DRILL-DOWN: LISTAS ESPECÍFICAS DOS CARDS
+// 🔍 DRILL-DOWN: LISTAS ESPECÍFICAS DOS CARDS DO GESTOR
 function abrirLista(tipo) {
   if (!dadosGestorCache) { toast("Aguarde a sincronização de dados..."); return; }
   var titulo = document.getElementById('listaRapidaTitulo');
@@ -254,7 +249,7 @@ function abrirLista(tipo) {
     });
     if(viagens.length === 0) html = '<p class="empty-text">Ninguém em viagem no momento.</p>';
     viagens.forEach(v => {
-      var infoDestino = v.destino.replace('DESTINO: ', ''); // Limpeza visual
+      var infoDestino = v.destino.replace('DESTINO: ', '');
       html += `<div class="ios-card-row" style="background:var(--surface-1); border-radius:12px; margin-bottom:8px; border:1px solid var(--border);"><div class="ios-icon-bg" style="background:var(--orange-soft); color:var(--orange);">🚗</div><div class="ios-row-content"><div class="ios-row-title">${v.nome}</div><div class="ios-row-sub">${infoDestino}</div></div><div class="tl-hora">${v.hora}</div></div>`;
     });
   } else if (tipo === 'presentes') {
@@ -270,6 +265,15 @@ function abrirLista(tipo) {
       html += `<div class="ios-card-row" style="background:var(--surface-1); border-radius:12px; margin-bottom:8px; border:1px solid var(--border);"><div class="ios-icon-bg" style="background:var(--red-soft); color:var(--red);">📍</div><div class="ios-row-content"><div class="ios-row-title">${a.nome}</div><div class="ios-row-sub">Fora do limite na ${a.tipo}</div></div><div class="tl-hora">${a.hora}</div></div>`;
     });
     if(!html) html = '<p class="empty-text">Tudo regular hoje.</p>';
+  } else if (tipo === 'pendentes') {
+    titulo.textContent = "⏳ Pendentes (Sem Registro)";
+    Object.keys(dadosGestorCache.colaboradores).forEach(n => {
+      var c = dadosGestorCache.colaboradores[n];
+      if(!c.entrada && !c.justificativa) {
+        html += `<div class="ios-card-row" style="background:var(--surface-1); border-radius:12px; margin-bottom:8px; border:1px solid var(--border);"><div class="ios-icon-bg" style="background:var(--surface-3); color:var(--text-tertiary);">⏳</div><div class="ios-row-content"><div class="ios-row-title">${n}</div><div class="ios-row-sub">Ainda não registrou o ponto hoje</div></div></div>`;
+      }
+    });
+    if(!html) html = '<p class="empty-text">Todos os colaboradores já registraram o ponto.</p>';
   }
 
   body.innerHTML = html;
@@ -285,6 +289,7 @@ function syncGestor() {
     dadosGestorCache = d; 
     document.getElementById('statPresentes').textContent = d.presentes || 0;
     document.getElementById('statAlertas').textContent = (d.alertas ? d.alertas.length : 0);
+    document.getElementById('statPendentes').textContent = d.ausentes || 0;
     
     var emViagem = [];
     var nomes = Object.keys(d.colaboradores);
@@ -317,7 +322,7 @@ function fecharPainel() { document.getElementById('painelModal').classList.remov
 
 function carregarPainel(isPrinting) {
   var body = document.getElementById('painelBody');
-  body.innerHTML = '<div style="text-align:center;padding:60px 20px;"><div class="ld-spinner" style="margin:0 auto; border-top-color:var(--blue);"></div><p style="color:var(--text-tertiary);margin-top:16px;font-size:.85rem;">A sincronizar dados...</p></div>';
+  body.innerHTML = '<div style="text-align:center;padding:60px 20px;"><div class="ld-spinner" style="margin:0 auto; border-top-color:var(--blue);"></div><p style="color:var(--text-tertiary);margin-top:16px;font-size:.85rem;">Sincronizando dados...</p></div>';
   fetch(API_URL + '?painel=1&senha=' + encodeURIComponent(sessao.senha)).then(function (r) { return r.json(); }).then(function (d) { if (d.erro) { body.innerHTML = '<p style="color:var(--red);padding:20px;">' + d.erro + '</p>'; return; } renderPainel(d); }).catch(function () { body.innerHTML = '<p style="color:var(--red);padding:20px;">Erro de conexão</p>'; });
 }
 
@@ -341,15 +346,15 @@ function fecharJustificativa() { document.getElementById('justModal').classList.
 function salvarJustificativa() {
   var motivo = document.getElementById('justMotivo').value.trim(); var nomeColab = document.getElementById('justNomeInput').value;
   if(motivo.length < 3) { toast('Escreva um motivo válido'); return; }
-  var btn = document.getElementById('btnSalvarJust'); btn.disabled = true; btn.textContent = 'A guardar...';
-  fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ acao: 'justificar', nomeColab: nomeColab, motivo: motivo, gestor: sessao.nome }), redirect: 'follow' }).then(function (r) { return r.json(); }).then(function (d) { if (d.status === 'ok') { fecharJustificativa(); toast(d.msg); carregarPainel(); } else { toast('Erro ao justificar'); } }).catch(function () { toast('Sem conexão'); }).finally(function () { btn.disabled = false; btn.textContent = 'Gravar Justificativa'; });
+  var btn = document.getElementById('btnSalvarJust'); btn.disabled = true; btn.textContent = 'Salvando...';
+  fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ acao: 'justificar', nomeColab: nomeColab, motivo: motivo, gestor: sessao.nome }), redirect: 'follow' }).then(function (r) { return r.json(); }).then(function (d) { if (d.status === 'ok') { fecharJustificativa(); toast(d.msg); carregarPainel(); } else { toast('Erro ao justificar'); } }).catch(function () { toast('Sem conexão'); }).finally(function () { btn.disabled = false; btn.textContent = 'Salvar Justificativa'; });
 }
 
 function abrirRelatorio() { document.getElementById('relModal').classList.add('show'); carregarRelatorio(); }
 function fecharRelatorio() { document.getElementById('relModal').classList.remove('show'); }
 function carregarRelatorio() {
   var body = document.getElementById('relBody');
-  body.innerHTML = '<div style="text-align:center;padding:60px 20px;"><div class="ld-spinner" style="margin:0 auto; border-top-color:var(--blue);"></div><p style="color:var(--text-tertiary);margin-top:16px;font-size:.85rem;">A calcular horas do mês inteiro...</p></div>';
+  body.innerHTML = '<div style="text-align:center;padding:60px 20px;"><div class="ld-spinner" style="margin:0 auto; border-top-color:var(--blue);"></div><p style="color:var(--text-tertiary);margin-top:16px;font-size:.85rem;">Calculando horas do mês inteiro...</p></div>';
   fetch(API_URL + '?relatorio=1&senha=' + encodeURIComponent(sessao.senha)).then(function(r){ return r.json(); }).then(function(d){ if (d.erro) { body.innerHTML = '<p style="color:var(--red);padding:20px;">' + d.erro + '</p>'; return; } renderRelatorio(d); }).catch(function() { body.innerHTML = '<p style="color:var(--red);padding:20px;">Erro de conexão</p>'; });
 }
 
