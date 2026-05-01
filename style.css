@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════════════
-   PONTO DIGITAL — DESIGN SYSTEM v7.0 (Apple Premium)
+   PONTO DIGITAL — DESIGN SYSTEM v10.0 (Apple Premium & Clean)
    ══════════════════════════════════════════════════════════════ */
 
 :root {
@@ -26,6 +26,7 @@
   --font-rounded: 'SF Pro Rounded', -apple-system, 'Inter', sans-serif;
   --r-xs: 8px; --r-sm: 12px; --r-md: 16px; --r-lg: 22px; --r-xl: 28px; --r-full: 100px;
   --ease: cubic-bezier(.2, .8, .2, 1);
+  --dur: 0.3s; /* Correção: Variável de duração adicionada */
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -74,26 +75,19 @@ select.login-field option { background: #1c1c1e; }
 .badge-offline { background: var(--red-soft); color: var(--red); }
 .user-badge { padding: 4px 12px; border-radius: var(--r-full); font-size: .68rem; font-weight: 600; }
 
+/* Correção: Remove a duplicidade da tag Gestor no topo */
+.badge-gestor + .user-badge { display: none !important; }
+
 .container { max-width: 600px; margin: 0 auto; padding: 20px 16px 60px; position: relative; z-index: 1; }
 .section-label { font-size: .75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .04em; margin: 20px 0 10px 8px; }
 
-/* ══════════════ APPLE iOS CARDS (NOVO DESIGN) ══════════════ */
-.ios-card {
-  background: var(--surface-1); border: .5px solid var(--border);
-  border-radius: var(--r-lg); margin-bottom: 24px; overflow: hidden;
-  backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
-}
-.ios-card-row {
-  display: flex; align-items: center; padding: 14px 18px;
-  border-bottom: .5px solid var(--border); transition: background 0.2s ease;
-}
+/* ══════════════ APPLE iOS CARDS ══════════════ */
+.ios-card { background: var(--surface-1); border: .5px solid var(--border); border-radius: var(--r-lg); margin-bottom: 24px; overflow: hidden; backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px); }
+.ios-card-row { display: flex; align-items: center; padding: 14px 18px; border-bottom: .5px solid var(--border); transition: background 0.2s ease; }
 .ios-card-row.hidden { display: none !important; }
 .ios-card-row:last-child { border-bottom: none; }
 .ios-card-row:active { background: var(--surface-2); }
-.ios-icon-bg {
-  width: 34px; height: 34px; border-radius: 8px; display: flex;
-  align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;
-}
+.ios-icon-bg { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
 .ios-row-content { flex: 1; margin-left: 14px; min-width: 0; }
 .ios-row-title { font-size: .95rem; font-weight: 600; color: var(--text-primary); }
 .ios-row-sub { font-size: .75rem; color: var(--text-tertiary); margin-top: 3px; font-weight: 500; }
@@ -108,15 +102,9 @@ select.login-field option { background: #1c1c1e; }
 /* Rádios Customizados Apple */
 .radio-row { cursor: pointer; }
 .radio-row input { display: none; }
-.radio-custom {
-  width: 24px; height: 24px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2);
-  position: relative; flex-shrink: 0; margin-left: 10px; transition: all 0.2s ease;
-}
+.radio-custom { width: 24px; height: 24px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); position: relative; flex-shrink: 0; margin-left: 10px; transition: all 0.2s ease; }
 .radio-row input:checked + .radio-custom { border-color: var(--blue); background: var(--blue); }
-.radio-row input:checked + .radio-custom::after {
-  content: ''; position: absolute; top: 6px; left: 6px; width: 8px; height: 8px;
-  background: #fff; border-radius: 50%;
-}
+.radio-row input:checked + .radio-custom::after { content: ''; position: absolute; top: 6px; left: 6px; width: 8px; height: 8px; background: #fff; border-radius: 50%; }
 
 /* Campos de Texto Minimalistas */
 .form-field { width: 100%; padding: 12px 0; background: transparent; border: none; color: var(--text-primary); font-size: .95rem; outline: none; }
@@ -126,7 +114,6 @@ select.login-field option { background: #1c1c1e; }
 .submit-btn { width: 100%; padding: 16px; border: none; border-radius: var(--r-sm); color: #fff; font-weight: 700; font-size: 1rem; cursor: pointer; transition: all 0.2s ease; }
 .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(100%); }
 .submit-btn:not(:disabled):active { transform: scale(0.98); }
-
 .cam-btn { padding: 12px 20px; border-radius: var(--r-full); border: none; font-size: .85rem; font-weight: 600; cursor: pointer; background: rgba(118,118,128,.15); color: var(--text-primary); }
 
 .timeline-container { background: var(--surface-1); border: .5px solid var(--border); border-radius: var(--r-lg); padding: 16px; }
@@ -140,32 +127,6 @@ select.login-field option { background: #1c1c1e; }
 .tl-RETORNO_ALMOÇO { background: var(--blue-soft); color: var(--blue); }
 .tl-SAÍDA { background: var(--red-soft); color: var(--red); }
 
-/* ══════════════ TOOLTIPS (BALÕES DE AJUDA) ══════════════ */
-.help-icon {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 16px; height: 16px; border-radius: 50%;
-  background: rgba(235, 235, 245, 0.2); color: var(--text-primary);
-  font-size: 0.65rem; font-weight: 700; font-family: var(--font-rounded);
-  margin-left: 6px; cursor: help; position: relative;
-  vertical-align: middle; transition: background 0.2s ease;
-}
-.help-icon:active, .help-icon:hover { background: var(--orange); color: #fff; }
-
-.help-icon::after {
-  content: attr(data-tooltip);
-  position: absolute; bottom: 130%; left: 50%; transform: translateX(-50%) translateY(5px);
-  background: rgba(28, 28, 30, 0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-  border: 0.5px solid rgba(255, 255, 255, 0.1); border-radius: 8px;
-  color: #fff; font-size: 0.75rem; font-weight: 500; font-family: var(--font);
-  padding: 10px 14px; width: max-content; max-width: 220px;
-  text-align: center; line-height: 1.3;
-  opacity: 0; visibility: hidden; transition: all 0.3s ease;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6); z-index: 1000; pointer-events: none;
-}
-.help-icon:hover::after, .help-icon:active::after {
-  opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0);
-}
-
 /* ══════════════ GESTOR & MODAIS ══════════════ */
 .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
 .stat-card { background: var(--surface-1); border: .5px solid var(--border); border-radius: var(--r-md); padding: 16px 12px; text-align: center; cursor: pointer; }
@@ -173,28 +134,30 @@ select.login-field option { background: #1c1c1e; }
 .stat-card .s-label { font-size: .6rem; color: var(--text-tertiary); text-transform: uppercase; font-weight: 600; margin-bottom: 4px; }
 .stat-card .s-value { font-size: 1.4rem; font-weight: 800; font-family: var(--font-rounded); }
 
-.relatorio-switch-row {
-  display: flex; align-items: center; justify-content: space-between;
-  background: var(--surface-1); border: .5px solid var(--border);
-  border-radius: var(--r-lg); padding: 16px 20px; margin-bottom: 24px;
-}
+.relatorio-switch-row { display: flex; align-items: center; justify-content: space-between; background: var(--surface-1); border: .5px solid var(--border); border-radius: var(--r-lg); padding: 16px 20px; margin-bottom: 24px; }
 .relatorio-switch-label { font-size: .9rem; font-weight: 600; color: var(--text-primary); }
 
-.modal-full { display: none; position: fixed; inset: 0; z-index: 5000; background: rgba(0,0,0,.92); backdrop-filter: blur(20px); overflow-y: auto; }
+/* Textos de estado vazio nas listas */
+.empty-text { color: var(--text-tertiary); font-size: .85rem; text-align: center; padding: 40px 20px; }
+
+/* Ajuste Glassmorphism para as listas rápidas */
+.modal-full { display: none; position: fixed; inset: 0; z-index: 5000; background: rgba(0,0,0,.8) !important; backdrop-filter: blur(50px) !important; -webkit-backdrop-filter: blur(50px) !important; overflow-y: auto; }
 .modal-full.show { display: block; animation: modalSlide .35s var(--ease); }
 @keyframes modalSlide { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
 .modal-bar { position: sticky; top: 0; z-index: 10; background: rgba(0,0,0,.8); backdrop-filter: blur(40px); border-bottom: .5px solid var(--border); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; }
 .modal-bar h2 { font-size: 1rem; font-weight: 700; color: var(--text-primary); }
 .modal-close { background: rgba(118,118,128,.15); color: var(--text-secondary); border: none; border-radius: var(--r-full); padding: 8px 18px; font-weight: 600; cursor: pointer; }
 .modal-body { max-width: 600px; margin: 0 auto; padding: 24px 16px; }
 
-/* ══════════════ OVERLAYS ══════════════ */
+/* ══════════════ OVERLAYS & TOASTS ══════════════ */
 .success-overlay { display: none; position: fixed; inset: 0; z-index: 8000; background: rgba(0,0,0,.85); backdrop-filter: blur(30px); align-items: center; justify-content: center; flex-direction: column; gap: 16px; }
 .success-overlay.show { display: flex; animation: successPop .3s ease; }
 @keyframes successPop { from { opacity: 0; } to { opacity: 1; } }
 .success-icon { font-size: 4rem; }
 .success-msg { font-size: 1.15rem; font-weight: 700; color: var(--text-white); }
 .success-detail { font-size: .84rem; color: var(--text-tertiary); font-family: var(--font-rounded); }
+
 .toast { position: fixed; bottom: 34px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--surface-elevated); border: .5px solid var(--border); border-radius: var(--r-full); padding: 12px 28px; color: var(--text-primary); font-size: .84rem; font-weight: 600; z-index: 11000; opacity: 0; transition: all .4s ease; box-shadow: 0 12px 40px rgba(0,0,0,.35); }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
@@ -208,72 +171,24 @@ select.login-field option { background: #1c1c1e; }
 }
 
 /* ══════════════════════════════════════════════════════════════
-   TOOLTIP — Balões de Dúvida (?)
+   TOOLTIP — Balões de Ajuda (Controlado 100% pelo app.js)
    ══════════════════════════════════════════════════════════════ */
 .help-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: rgba(10, 132, 255, .2);
-  color: var(--blue);
-  font-size: .65rem;
-  font-weight: 700;
-  cursor: pointer;
-  margin-left: 6px;
-  vertical-align: middle;
-  transition: all .2s ease;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: rgba(10, 132, 255, .2); color: var(--blue);
+  font-size: .65rem; font-weight: 700; cursor: pointer;
+  margin-left: 6px; vertical-align: middle; transition: all .2s ease;
   -webkit-tap-highlight-color: transparent;
 }
-
-.help-icon:active {
-  transform: scale(.9);
-  background: rgba(10, 132, 255, .35);
-}
+.help-icon:active { transform: scale(.9); background: rgba(10, 132, 255, .35); }
 
 .tooltip-balloon {
-  position: absolute;
-  z-index: 12000;
-  width: 280px;
-  padding: 14px 18px;
-  background: rgba(44, 44, 46, .96);
-  backdrop-filter: blur(30px);
-  -webkit-backdrop-filter: blur(30px);
-  border: .5px solid rgba(255, 255, 255, .12);
-  border-radius: 14px;
-  color: #f5f5f7;
-  font-size: .82rem;
-  font-weight: 500;
-  line-height: 1.5;
-  letter-spacing: -.01em;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, .5),
-              0 0 0 .5px rgba(255,255,255,.06) inset;
+  position: absolute; z-index: 12000; width: 280px; padding: 14px 18px;
+  background: rgba(44, 44, 46, .96); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+  border: .5px solid rgba(255, 255, 255, .12); border-radius: 14px; color: #f5f5f7;
+  font-size: .82rem; font-weight: 500; line-height: 1.5; letter-spacing: -.01em;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, .5), 0 0 0 .5px rgba(255,255,255,.06) inset;
   animation: tooltipIn .25s cubic-bezier(.2, .8, .2, 1);
 }
-
-@keyframes tooltipIn {
-  from { opacity: 0; transform: translateY(6px) scale(.96); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-/* Remove a duplicidade da tag Gestor no topo */
-.badge-gestor + .user-badge { 
-    display: none !important; 
-}
-
-/* Textos de estado vazio nas listas */
-.empty-text {
-    color: var(--text-tertiary);
-    font-size: .85rem;
-    text-align: center;
-    padding: 40px 20px;
-}
-
-/* Ajuste Glassmorphism para as listas rápidas */
-.modal-full {
-    background: rgba(0, 0, 0, 0.8) !important;
-    backdrop-filter: blur(50px) !important;
-    -webkit-backdrop-filter: blur(50px) !important;
-}
+@keyframes tooltipIn { from { opacity: 0; transform: translateY(6px) scale(.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
