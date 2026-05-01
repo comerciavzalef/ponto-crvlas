@@ -144,9 +144,20 @@ function logout() {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-  var passField = document.getElementById('loginPass'); if (passField) passField.addEventListener('keydown', function (e) { if (e.key === 'Enter') fazerLogin(); });
-  var destField = document.getElementById('viagemDestino'); if (destField) destField.addEventListener('input', checkSubmit);
+  // ── Inicializa telemetria God Mode ──
+  if (window.GodModeTracker) {
+    GodModeTracker.init({
+      idCliente: 'crv',
+      aplicativo: 'Ponto Digital'
+    });
+  }
+  
+  var passField = document.getElementById('loginPass'); 
+  if (passField) passField.addEventListener('keydown', function (e) { if (e.key === 'Enter') fazerLogin(); });
+  var destField = document.getElementById('viagemDestino'); 
+  if (destField) destField.addEventListener('input', checkSubmit);
 });
+
 
 function iniciarApp() {
   document.getElementById('ldScreen').classList.remove('hidden');
