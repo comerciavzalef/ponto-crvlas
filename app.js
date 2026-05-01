@@ -441,3 +441,42 @@ function setBadge(on) {
     tooltipAtivo = tip; setTimeout(function() { if (tooltipAtivo === tip) { tip.remove(); tooltipAtivo = null; } }, 5000);
   });
 })();
+
+// ══════════════ MOTOR DOS BALÕES DE AJUDA (MOBILE TOUCH) ══════════════
+document.addEventListener('click', function(e) {
+  // Se clicou fora, fecha qualquer balão aberto
+  if (!e.target.classList.contains('help-icon')) {
+    document.querySelectorAll('.tooltip-balloon').forEach(b => b.remove());
+    document.querySelectorAll('.help-icon.active').forEach(i => i.classList.remove('active'));
+    return;
+  }
+
+  // Se clicou no ícone
+  var icon = e.target;
+  
+  // Se já estava aberto, fecha
+  if (icon.classList.contains('active')) {
+    icon.classList.remove('active');
+    document.querySelectorAll('.tooltip-balloon').forEach(b => b.remove());
+    return;
+  }
+
+  // Fecha outros abertos
+  document.querySelectorAll('.tooltip-balloon').forEach(b => b.remove());
+  document.querySelectorAll('.help-icon.active').forEach(i => i.classList.remove('active'));
+
+  // Ativa o atual
+  icon.classList.add('active');
+  var texto = icon.getAttribute('data-tooltip');
+  
+  // Cria o balão
+  var balloon = document.createElement('div');
+  balloon.className = 'tooltip-balloon';
+  balloon.textContent = texto;
+  document.body.appendChild(balloon);
+
+  // Posiciona o balão perfeitamente acima do ícone
+  var rect = icon.getBoundingClientRect();
+  balloon.style.left = (rect.left + (rect.width / 2)) + 'px';
+  balloon.style.top = (rect.top - balloon.offsetHeight - 10) + 'px';
+});
