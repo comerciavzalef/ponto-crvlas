@@ -491,13 +491,12 @@ function syncGestor() {
 }
 
 // Função Evoluída: Agora aceita informações de feriado
-function renderTimeline(items, targetId, feriadoInfo = null) {
+ function renderTimeline(items, targetId, feriadoInfo = null) {
   var el = document.getElementById(targetId);
-  if (!items || items.length === 0) { el.innerHTML = '<p class="empty-text">Sem atividade recente.</p>'; return; }
-  
   var html = '';
 
-  // Se o sistema avisar que hoje é feriado, injeta o Banner Premium no topo da lista
+  // ✅ Banner de feriado renderiza PRIMEIRO, sempre que houver feriado,
+  // mesmo se não tiver nenhum registro de ponto ainda
   if (feriadoInfo) {
     html += `
     <div class="feriado-banner">
@@ -509,18 +508,20 @@ function renderTimeline(items, targetId, feriadoInfo = null) {
     </div>`;
   }
 
-  // Lista os funcionários que bateram o ponto
-  items.forEach(function (it) {
-    var cls = 'tl-' + it.tipo.replace(/\s/g, '_');
-    
-    // Se for feriado, todos da lista ganham a Tag Roxa de "+ Extra"
-    var tagExtra = feriadoInfo ? '<span class="tag-extra">+ Extra</span>' : '';
-    
-    html += '<div class="timeline-item"><span class="tl-hora">' + it.hora + '</span><span class="tl-nome">' + it.nome + tagExtra + '</span><span class="tl-tipo ' + cls + '">' + it.tipo + '</span></div>';
-  });
-  
+  // Lista de atividades — só renderiza se tiver
+  if (!items || items.length === 0) {
+    html += '<p class="empty-text">Sem atividade recente.</p>';
+  } else {
+    items.forEach(function (it) {
+      var cls = 'tl-' + it.tipo.replace(/\s/g, '_');
+      var tagExtra = feriadoInfo ? '<span class="tag-extra">+ Extra</span>' : '';
+      html += '<div class="timeline-item"><span class="tl-hora">' + it.hora + '</span><span class="tl-nome">' + it.nome + tagExtra + '</span><span class="tl-tipo ' + cls + '">' + it.tipo + '</span></div>';
+    });
+  }
+
   el.innerHTML = html;
 }
+
 
 function carregarTopHoras() {
   var ctrl = new AbortController();
