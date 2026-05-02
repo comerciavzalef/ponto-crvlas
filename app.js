@@ -478,8 +478,8 @@ function syncGestor() {
         });
       });
       todasAtividades.sort((a, b) => b.hora.localeCompare(a.hora));
-      renderTimeline(todasAtividades.slice(0, 10), 'timelineGestor');
-
+      // O d.feriadoHoje virá da nossa planilha mestra no próximo passo
+      renderTimeline(todasAtividades.slice(0, 10), 'timelineGestor', d.feriadoHoje);
       if (!avisoViagemFeito && emViagem.length > 0) {
         toast("📍 Atenção: " + emViagem.join(", ") + " na estrada hoje.");
         avisoViagemFeito = true;
