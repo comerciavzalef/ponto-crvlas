@@ -491,12 +491,12 @@ function syncGestor() {
 }
 
 // Função Evoluída: Agora aceita informações de feriado
- function renderTimeline(items, targetId, feriadoInfo = null) {
+ f// Função Evoluída: Aceita feriado + renderiza banner mesmo sem atividade
+function renderTimeline(items, targetId, feriadoInfo = null) {
   var el = document.getElementById(targetId);
   var html = '';
 
-  // ✅ Banner de feriado renderiza PRIMEIRO, sempre que houver feriado,
-  // mesmo se não tiver nenhum registro de ponto ainda
+  // ✅ Banner de feriado renderiza PRIMEIRO, mesmo se não houver atividade
   if (feriadoInfo) {
     html += `
     <div class="feriado-banner">
@@ -508,7 +508,7 @@ function syncGestor() {
     </div>`;
   }
 
-  // Lista de atividades — só renderiza se tiver
+  // Lista de atividades
   if (!items || items.length === 0) {
     html += '<p class="empty-text">Sem atividade recente.</p>';
   } else {
