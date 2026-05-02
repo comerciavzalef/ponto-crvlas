@@ -490,8 +490,7 @@ function syncGestor() {
     .catch(function () { });
 }
 
-// Função Evoluída: Agora aceita informações de feriado
- f// Função Evoluída: Aceita feriado + renderiza banner mesmo sem atividade
+// Função Evoluída: Aceita feriado + renderiza banner mesmo sem atividade
 function renderTimeline(items, targetId, feriadoInfo = null) {
   var el = document.getElementById(targetId);
   var html = '';
