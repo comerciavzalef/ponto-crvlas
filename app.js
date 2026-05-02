@@ -490,14 +490,35 @@ function syncGestor() {
     .catch(function () { });
 }
 
-function renderTimeline(items, targetId) {
+// Função Evoluída: Agora aceita informações de feriado
+function renderTimeline(items, targetId, feriadoInfo = null) {
   var el = document.getElementById(targetId);
   if (!items || items.length === 0) { el.innerHTML = '<p class="empty-text">Sem atividade recente.</p>'; return; }
+  
   var html = '';
+
+  // Se o sistema avisar que hoje é feriado, injeta o Banner Premium no topo da lista
+  if (feriadoInfo) {
+    html += `
+    <div class="feriado-banner">
+      <div class="feriado-icon">🚩</div>
+      <div class="feriado-text">
+        <div class="feriado-title">Feriado: ${feriadoInfo.nome}</div>
+        <div class="feriado-sub">Dia contabilizado como ${feriadoInfo.multiplicador} de Extra</div>
+      </div>
+    </div>`;
+  }
+
+  // Lista os funcionários que bateram o ponto
   items.forEach(function (it) {
     var cls = 'tl-' + it.tipo.replace(/\s/g, '_');
-    html += '<div class="timeline-item"><span class="tl-hora">' + it.hora + '</span><span class="tl-nome">' + it.nome + '</span><span class="tl-tipo ' + cls + '">' + it.tipo + '</span></div>';
+    
+    // Se for feriado, todos da lista ganham a Tag Roxa de "+ Extra"
+    var tagExtra = feriadoInfo ? '<span class="tag-extra">+ Extra</span>' : '';
+    
+    html += '<div class="timeline-item"><span class="tl-hora">' + it.hora + '</span><span class="tl-nome">' + it.nome + tagExtra + '</span><span class="tl-tipo ' + cls + '">' + it.tipo + '</span></div>';
   });
+  
   el.innerHTML = html;
 }
 
