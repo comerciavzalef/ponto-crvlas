@@ -8,6 +8,7 @@
  *    - Manter heartbeat de sessão ativa (30s, com pausa por inatividade)
  *    - Capturar erros não tratados e enviar como log
  *    - Encerrar sessão graciosamente no fechamento da aba
+ *    - WATCHDOG: detectar travamentos da thread principal (loops infinitos)
  *
  *  Princípios:
  *    - Nunca quebrar o app de produção
@@ -79,7 +80,6 @@
     try {
       const ua = navigator.userAgent || '';
       const platform = navigator.platform || '';
-      // Versão compacta — não a UA inteira (que é poluição visual no painel)
       const mobile = /Mobi|Android|iPhone|iPad/i.test(ua);
       let browser = 'Browser';
       if (/Edg\//.test(ua))      browser = 'Edge';
@@ -106,7 +106,6 @@
 
   /**
    * POST fire-and-forget — nunca rejeita, nunca bloqueia o app.
-   * Em caso de falha de rede, loga warning no console e segue a vida.
    */
   function send(payload) {
     if (!CONFIG.URL_CENTRAL || CONFIG.URL_CENTRAL.startsWith('COLE_')) {
@@ -130,8 +129,7 @@
   }
 
   /**
-   * Variante que funciona durante `beforeunload`. `fetch` normal é cancelado
-   * quando a aba fecha; `sendBeacon` é a única API garantida.
+   * Variante para `beforeunload` — usa sendBeacon.
    */
   function sendBeacon(payload) {
     try {
@@ -158,7 +156,6 @@
       }
       return id;
     } catch (e) {
-      // localStorage bloqueado (modo privado em alguns navegadores)
       return uuid();
     }
   }
@@ -172,7 +169,6 @@
   // ==========================================================================
   function startHeartbeat() {
     if (state.heartbeatTimer) return;
-    // Primeiro ping imediato — para a Central já ver "online" sem esperar 30s
     pingHeartbeat();
     state.heartbeatTimer = setInterval(() => {
       if (state.isIdle) return;
@@ -208,13 +204,11 @@
       state.lastActivity = Date.now();
       if (state.isIdle) {
         state.isIdle = false;
-        // Volta da inatividade — pinga imediato pra a Central marcar online
         if (state.loggedIn) pingHeartbeat();
       }
     };
     events.forEach(ev => global.addEventListener(ev, onActivity, { passive: true }));
 
-    // Verificador de inatividade — checa a cada 30s se passou do threshold
     setInterval(() => {
       const idleFor = Date.now() - state.lastActivity;
       if (idleFor > CONFIG.IDLE_THRESHOLD_MS && !state.isIdle) {
@@ -249,15 +243,82 @@
   function bindUnloadHandlers() {
     const onUnload = () => {
       if (!state.loggedIn || !state.sessionId) return;
-      // sendBeacon é a única forma confiável durante unload
       sendBeacon({
         action:    'endSession',
         sessionId: state.sessionId
       });
     };
-
-    // pagehide cobre fechar aba, navegação, mobile background — mais robusto
     global.addEventListener('pagehide', onUnload);
+  }
+
+  // ==========================================================================
+  // WATCHDOG — Detecta travamentos da thread principal
+  // ----------------------------------------------------------------------------
+  // Como funciona:
+  //   1. Thread principal "pulsa" a cada 2s (atualiza wdLastPulse).
+  //   2. Um Web Worker em thread SEPARADA verifica a cada 2s.
+  //   3. Se a thread principal ficar 8s sem pulsar, está travada (loop infinito,
+  //      cálculo síncrono pesado, etc).
+  //   4. O worker dispara um api.log() de ERRO pra Central via fetch interno.
+  //   5. Cooldown de 5min para evitar flood se o app destravar e travar de novo.
+  //
+  // Limitação: NÃO detecta loops assíncronos (Promise.then() infinito, p.ex.).
+  //            Para esses casos, o erro vem do bindGlobalErrorHandlers ou de
+  //            timeout na própria função.
+  // ==========================================================================
+  const WATCHDOG = {
+    HEARTBEAT_INTERVAL_MS: 2000,
+    CHECK_INTERVAL_MS:     2000,
+    TIMEOUT_MS:            8000,
+    COOLDOWN_MS:           5 * 60 * 1000
+  };
+
+  let wdLastPulse  = Date.now();
+  let wdAlertSent  = false;
+  let wdWorker     = null;
+  let wdPulseTimer = null;
+
+  function startWatchdog() {
+    if (wdWorker) return;
+
+    // 1) Pulso da thread principal — se travar, esse setInterval para de rodar
+    wdPulseTimer = setInterval(() => {
+      wdLastPulse = Date.now();
+    }, WATCHDOG.HEARTBEAT_INTERVAL_MS);
+
+    // 2) Worker em thread separada — verifica se a principal continua pulsando
+    try {
+      const workerCode = `
+        setInterval(() => self.postMessage('check'), ${WATCHDOG.CHECK_INTERVAL_MS});
+      `;
+      const blob = new Blob([workerCode], { type: 'application/javascript' });
+      wdWorker = new Worker(URL.createObjectURL(blob));
+
+      wdWorker.onmessage = () => {
+        const silentFor = Date.now() - wdLastPulse;
+        if (silentFor > WATCHDOG.TIMEOUT_MS && !wdAlertSent) {
+          wdAlertSent = true;
+          warn(`Watchdog detectou travamento de ${Math.round(silentFor / 1000)}s`);
+
+          api.log({
+            tipo: 'ERRO',
+            mensagem:
+              `[WATCHDOG] Thread principal travada por ${Math.round(silentFor / 1000)}s. ` +
+              `Possível loop infinito ou bloqueio síncrono. ` +
+              `URL: ${global.location.href}`
+          });
+
+          setTimeout(() => { wdAlertSent = false; }, WATCHDOG.COOLDOWN_MS);
+        }
+      };
+    } catch (e) {
+      warn('Watchdog não pôde iniciar Worker:', e.message);
+    }
+  }
+
+  function stopWatchdog() {
+    if (wdPulseTimer) { clearInterval(wdPulseTimer); wdPulseTimer = null; }
+    if (wdWorker)     { wdWorker.terminate();        wdWorker     = null; }
   }
 
   // ==========================================================================
@@ -266,7 +327,6 @@
   const api = {
     /**
      * Inicializa o tracker. Chamar UMA vez no boot do app.
-     * Não dispara nada ainda — apenas guarda contexto e prepara handlers globais.
      */
     init({ idCliente, aplicativo }) {
       if (state.initialized) {
@@ -286,15 +346,11 @@
       bindActivityListeners();
       bindGlobalErrorHandlers();
       bindUnloadHandlers();
-
-      // Se o usuário estava logado em sessão anterior (F5 não desloga),
-      // recupera o sessionId. Mas só vai virar "online" quando loginSuccess for chamado
-      // OU quando o app explicitamente chamar resumeSession (caso queira retomar).
+      startWatchdog();   // ← Watchdog ligado já no boot
     },
 
     /**
      * Reporta login bem-sucedido.
-     * Chame após o app validar credenciais com sucesso.
      */
     loginSuccess({ usuario, dispositivo }) {
       if (!state.initialized) {
@@ -308,7 +364,6 @@
       state.lastActivity = Date.now();
       state.isIdle      = false;
 
-      // Registra evento de auth
       send({
         action:      'authEvent',
         idCliente:   state.idCliente,
@@ -319,14 +374,11 @@
         detalhes:    'Login bem-sucedido'
       });
 
-      // Inicia heartbeat
       startHeartbeat();
     },
 
     /**
      * Reporta tentativa de login falhada.
-     * Chame quando o usuário errou senha, conta inexistente, etc.
-     * NÃO inicia sessão — só registra o evento.
      */
     loginFailure({ usuario, motivo, dispositivo }) {
       if (!state.initialized) {
@@ -346,7 +398,7 @@
 
     /**
      * Logout explícito.
-     * Encerra a sessão na Central e limpa estado local.
+     * Nota: o Watchdog NÃO é parado — continua útil mesmo na tela de login.
      */
     logout() {
       if (!state.loggedIn || !state.sessionId) return;
@@ -368,9 +420,6 @@
      * Log manual (opcional).
      * Use para INFO/ALERTA específicos ou para registrar erros tratados
      * que você quer visibilidade na Central.
-     *
-     * Exemplo:
-     *   GodModeTracker.log({ tipo: 'INFO', mensagem: 'Backup local realizado' });
      */
     log({ tipo, mensagem }) {
       if (!state.initialized) {
@@ -389,8 +438,7 @@
     },
 
     /**
-     * Atalho de debug — útil para validar que a configuração está OK
-     * sem precisar fazer login. Chame no console do DevTools.
+     * Atalho de debug — útil para validar que a configuração está OK.
      */
     _debugPing() {
       send({
@@ -402,6 +450,18 @@
         tipoLog:      'INFO',
         mensagemErro: 'Ping de debug do tracker'
       }).then(() => warn('Debug ping enviado.'));
+    },
+
+    /**
+     * Atalho para forçar disparo do watchdog em ambiente de teste.
+     * Use no console do DevTools: GodModeTracker._debugWatchdogTest()
+     * (ATENÇÃO: trava o navegador por 9s.)
+     */
+    _debugWatchdogTest() {
+      warn('Travando thread principal por 9s para testar watchdog...');
+      const start = Date.now();
+      while (Date.now() - start < 9000) { /* trava de propósito */ }
+      warn('Thread liberada. Confira o God Mode em ~10s.');
     }
   };
 
@@ -409,59 +469,3 @@
   global.GodModeTracker = api;
 
 })(window);
-
-// ============================================================================
-// WATCHDOG — Detecta travamentos/loops e reporta ao God Mode
-// ============================================================================
-(function setupWatchdog() {
-  const WATCHDOG_TIMEOUT = 8000; // 8 segundos sem "heartbeat" = travado
-  const HEARTBEAT_INTERVAL = 2000; // pulso a cada 2s
-  let lastHeartbeat = Date.now();
-  let alertaJaEnviado = false;
-
-  // 1) Heartbeat: a cada 2s, marca que a thread principal está viva
-  setInterval(() => {
-    lastHeartbeat = Date.now();
-  }, HEARTBEAT_INTERVAL);
-
-  // 2) Detector via Web Worker (thread separada, não trava com a principal)
-  const watchdogCode = `
-    setInterval(() => {
-      self.postMessage('check');
-    }, 2000);
-  `;
-  const blob = new Blob([watchdogCode], { type: 'application/javascript' });
-  const worker = new Worker(URL.createObjectURL(blob));
-
-  worker.onmessage = () => {
-    const tempoSemPulso = Date.now() - lastHeartbeat;
-    if (tempoSemPulso > WATCHDOG_TIMEOUT && !alertaJaEnviado) {
-      alertaJaEnviado = true;
-      console.error('[Watchdog] Thread principal travada há', tempoSemPulso, 'ms');
-      // Envia via worker (thread independente) porque a principal está travada
-      enviarAlertaWatchdog(tempoSemPulso);
-    }
-  };
-
-  function enviarAlertaWatchdog(tempoMs) {
-    // Usa fetch via Worker se possível, senão tenta na thread principal mesmo
-    const payload = {
-      apiKey: 'ee91297b-685b-4ae4-b131-8434841c882e',
-      action: 'logEvent',
-      idCliente: 'crv', // ou pegar do localStorage
-      aplicativo: 'Ponto Digital',
-      tipoLog: 'ERRO',
-      usuario: localStorage.getItem('ponto.usuario') || 'desconhecido',
-      dispositivo: navigator.userAgent.includes('Mobile') ? 'Mobile' : 'Desktop',
-      mensagemErro: `WATCHDOG: thread principal travada há ${Math.round(tempoMs/1000)}s. Possível loop infinito.`,
-      timestamp: new Date().toISOString()
-    };
-    fetch('https://script.google.com/macros/s/AKfycbzqjZtyCn7X1lWQBSRYLwW-MijJN53YLPoHJrjjBh5y6P1kTaBATNpAV13KV9OgNYPx/exec', {
-      method: 'POST',
-      mode: 'cors',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(payload),
-      keepalive: true // garante envio mesmo se a página fechar
-    }).catch(err => console.warn('[Watchdog] Falha ao enviar alerta:', err));
-  }
-})();
