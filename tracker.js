@@ -1,292 +1,267 @@
 /**
  * ============================================================================
- *  GOD MODE TRACKER — Cliente de Telemetria para PWAs
- *  Vanilla JS | Zero dependências | Fire-and-forget
- *  ----------------------------------------------------------------------------
- *  Responsabilidades:
- *    - Reportar login/logout/falha de auth
- *    - Manter heartbeat de sessão ativa (30s, com pausa por inatividade)
- *    - Capturar erros não tratados e enviar como log
- *    - Encerrar sessão graciosamente no fechamento da aba
- *    - WATCHDOG: detectar travamentos da thread principal (loops infinitos)
+ * GOD MODE TRACKER — Telemetria/Observabilidade para PWAs
+ * ============================================================================
+ * Responsabilidades:
+ *  - Reportar login/logout/falha de auth
+ *  - Heartbeat de sessão a cada 30s (com pausa em idle)
+ *  - Capturar erros não tratados (window.onerror + unhandledrejection)
+ *  - Watchdog: detecta travamento real da thread principal
+ *  - Encerra sessão graciosamente ao fechar aba
  *
- *  Princípios:
- *    - Nunca quebrar o app de produção
- *    - Nunca bloquear UI
- *    - Sempre falhar silenciosamente
- *    - Persistir sessionId entre reloads (localStorage)
+ * Princípios:
+ *  - NUNCA quebra produção (fail silently)
+ *  - NUNCA bloqueia UI
+ *  - Persiste sessionId no localStorage
+ *  - Ignora falsos positivos (aba oculta, throttle do Chrome)
  * ============================================================================
  */
-
 (function (global) {
   'use strict';
 
-  // ==========================================================================
-  // CONFIGURAÇÃO INTERNA
-  // ==========================================================================
-  const CONFIG = {
-    URL_CENTRAL: 'https://script.google.com/macros/s/AKfycbzqjZtyCn7X1lWQBSRYLwW-MijJN53YLPoHJrjjBh5y6P1kTaBATNpAV13KV9OgNYPx/exec',
-    API_KEY:     'ee91297b-685b-4ae4-b131-8434841c882e',
+  // ============================================================================
+  // CONFIG
+  // ============================================================================
+  const URL_CENTRAL = 'https://script.google.com/macros/s/AKfycbzqjZtyCn7X1lWQBSRYLwW-MijJN53YLPoHJrjjBh5y6P1kTaBATNpAV13KV9OgNYPx/exec';
+  const API_KEY = 'ee91297b-685b-4ae4-b131-8434841c882e';
+  const HEARTBEAT_INTERVAL_MS = 30000;
+  const IDLE_THRESHOLD_MS = 5 * 60 * 1000; // 5 min
+  const SESSION_KEY = '__godmode_session_id';
+  const LOG_PREFIX = '[GodMode]';
 
-    // Heartbeat: enviar ping a cada N ms enquanto o usuário estiver ativo
-    HEARTBEAT_INTERVAL_MS: 30000,
-
-    // Inatividade: se o usuário não interagir por N ms, pausa o heartbeat
-    IDLE_THRESHOLD_MS: 5 * 60 * 1000,  // 5 minutos
-
-    // Storage key do sessionId (sobrevive F5)
-    SESSION_KEY: '__godmode_session_id',
-
-    // Prefix dos logs internos do tracker (filtrável no DevTools)
-    LOG_PREFIX: '[GodMode]'
+  // Watchdog config
+  const WATCHDOG = {
+    HEARTBEAT_INTERVAL_MS: 2000,   // pulso a cada 2s
+    CHECK_INTERVAL_MS: 2000,       // worker checa a cada 2s
+    TIMEOUT_MS: 8000,              // 8s sem pulso = travado
+    MAX_TIMEOUT_MS: 30000,         // >30s = throttle do Chrome, ignora
+    COOLDOWN_MS: 5 * 60 * 1000     // 5 min entre alertas
   };
 
-  // ==========================================================================
+  // ============================================================================
   // ESTADO INTERNO
-  // ==========================================================================
-  const state = {
-    initialized:  false,
-    loggedIn:     false,
+  // ============================================================================
+  let initialized = false;
+  let isLoggedIn = false;
+  let idCliente = null;
+  let aplicativo = null;
+  let usuario = null;
+  let dispositivo = null;
+  let sessionId = null;
+  let heartbeatTimer = null;
+  let heartbeatPaused = false;
+  let lastActivity = Date.now();
+  let isIdle = false;
 
-    // Contexto do tenant (vem do init)
-    idCliente:    null,
-    aplicativo:   null,
+  // Estado do Watchdog
+  let wdLastPulse = Date.now();
+  let wdAlertSent = false;
+  let wdWorker = null;
+  let wdPulseTimer = null;
 
-    // Contexto do usuário (vem do loginSuccess)
-    usuario:      null,
-    dispositivo:  null,
-    sessionId:    null,
-
-    // Controle de heartbeat
-    heartbeatTimer: null,
-    lastActivity:   Date.now(),
-    isIdle:         false
-  };
-
-  // ==========================================================================
+  // ============================================================================
   // UTILS
-  // ==========================================================================
+  // ============================================================================
   function uuid() {
     if (global.crypto && typeof global.crypto.randomUUID === 'function') {
       return global.crypto.randomUUID();
     }
-    // Fallback: pseudo-UUID v4 (suficiente como sessionId, não é criptográfico)
-    return 'sid-xxxxxxxxxxxxxxxx'.replace(/x/g, () =>
-      Math.floor(Math.random() * 16).toString(16)
-    );
-  }
-
-  function detectDevice() {
-    try {
-      const ua = navigator.userAgent || '';
-      const platform = navigator.platform || '';
-      const mobile = /Mobi|Android|iPhone|iPad/i.test(ua);
-      let browser = 'Browser';
-      if (/Edg\//.test(ua))      browser = 'Edge';
-      else if (/Chrome\//.test(ua)) browser = 'Chrome';
-      else if (/Firefox\//.test(ua)) browser = 'Firefox';
-      else if (/Safari\//.test(ua) && !/Chrome/.test(ua)) browser = 'Safari';
-
-      let os = platform;
-      if (/Android/.test(ua)) os = 'Android';
-      else if (/iPhone|iPad/.test(ua)) os = 'iOS';
-      else if (/Win/.test(platform)) os = 'Windows';
-      else if (/Mac/.test(platform)) os = 'macOS';
-      else if (/Linux/.test(platform)) os = 'Linux';
-
-      return `${os} · ${browser}${mobile ? ' (mobile)' : ''}`;
-    } catch (e) {
-      return 'unknown';
-    }
-  }
-
-  function warn(...args) {
-    try { console.warn(CONFIG.LOG_PREFIX, ...args); } catch (e) {}
-  }
-
-  /**
-   * POST fire-and-forget — nunca rejeita, nunca bloqueia o app.
-   */
-  function send(payload) {
-    if (!CONFIG.URL_CENTRAL || CONFIG.URL_CENTRAL.startsWith('COLE_')) {
-      warn('URL_CENTRAL não configurada. Telemetria desabilitada.');
-      return Promise.resolve();
-    }
-    return fetch(CONFIG.URL_CENTRAL, {
-      method: 'POST',
-      mode: 'cors',
-      credentials: 'omit',
-      cache: 'no-store',
-      redirect: 'follow',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({
-        apiKey: CONFIG.API_KEY,
-        ...payload
-      })
-    }).catch(err => {
-      warn('Falha ao enviar telemetria:', err.message);
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
     });
   }
 
-  /**
-   * Variante para `beforeunload` — usa sendBeacon.
-   */
-  function sendBeacon(payload) {
+  function detectDevice() {
+    const ua = navigator.userAgent;
+    let os = 'Desconhecido';
+    let browser = 'Desconhecido';
+
+    if (/Windows/i.test(ua)) os = 'Windows';
+    else if (/Android/i.test(ua)) os = 'Android';
+    else if (/iPhone|iPad|iPod/i.test(ua)) os = 'iOS';
+    else if (/Mac/i.test(ua)) os = 'macOS';
+    else if (/Linux/i.test(ua)) os = 'Linux';
+
+    if (/Edg/i.test(ua)) browser = 'Edge';
+    else if (/Chrome/i.test(ua)) browser = 'Chrome';
+    else if (/Firefox/i.test(ua)) browser = 'Firefox';
+    else if (/Safari/i.test(ua)) browser = 'Safari';
+
+    return os + ' · ' + browser;
+  }
+
+  function warn(...args) {
+    console.warn(LOG_PREFIX, ...args);
+  }
+
+  function send(payload) {
     try {
-      if (!navigator.sendBeacon) return false;
-      const blob = new Blob([JSON.stringify({
-        apiKey: CONFIG.API_KEY,
-        ...payload
-      })], { type: 'text/plain;charset=utf-8' });
-      return navigator.sendBeacon(CONFIG.URL_CENTRAL, blob);
+      fetch(URL_CENTRAL, {
+        method: 'POST',
+        mode: 'cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload),
+        keepalive: true
+      }).catch(err => warn('Falha ao enviar payload:', err.message));
     } catch (e) {
-      return false;
+      warn('Erro ao enviar:', e.message);
     }
   }
 
-  // ==========================================================================
-  // SESSION ID (persistente entre reloads)
-  // ==========================================================================
+  function sendBeacon(payload) {
+    try {
+      const blob = new Blob([JSON.stringify(payload)], { type: 'text/plain;charset=utf-8' });
+      navigator.sendBeacon(URL_CENTRAL, blob);
+    } catch (e) {
+      warn('Erro no beacon:', e.message);
+    }
+  }
+
+  // ============================================================================
+  // SESSÃO
+  // ============================================================================
   function getOrCreateSessionId() {
     try {
-      let id = localStorage.getItem(CONFIG.SESSION_KEY);
+      let id = localStorage.getItem(SESSION_KEY);
       if (!id) {
         id = uuid();
-        localStorage.setItem(CONFIG.SESSION_KEY, id);
+        localStorage.setItem(SESSION_KEY, id);
       }
       return id;
-    } catch (e) {
+    } catch (_) {
       return uuid();
     }
   }
 
   function clearSessionId() {
-    try { localStorage.removeItem(CONFIG.SESSION_KEY); } catch (e) {}
+    try { localStorage.removeItem(SESSION_KEY); } catch (_) {}
   }
 
-  // ==========================================================================
+  // ============================================================================
   // HEARTBEAT
-  // ==========================================================================
+  // ============================================================================
   function startHeartbeat() {
-    if (state.heartbeatTimer) return;
+    stopHeartbeat();
     pingHeartbeat();
-    state.heartbeatTimer = setInterval(() => {
-      if (state.isIdle) return;
-      pingHeartbeat();
-    }, CONFIG.HEARTBEAT_INTERVAL_MS);
+    heartbeatTimer = setInterval(() => {
+      if (!heartbeatPaused && !isIdle) pingHeartbeat();
+    }, HEARTBEAT_INTERVAL_MS);
   }
 
   function stopHeartbeat() {
-    if (state.heartbeatTimer) {
-      clearInterval(state.heartbeatTimer);
-      state.heartbeatTimer = null;
+    if (heartbeatTimer) {
+      clearInterval(heartbeatTimer);
+      heartbeatTimer = null;
     }
   }
 
   function pingHeartbeat() {
-    if (!state.loggedIn || !state.sessionId) return;
+    if (!isLoggedIn || !sessionId) return;
     send({
-      action:      'heartbeat',
-      sessionId:   state.sessionId,
-      idCliente:   state.idCliente,
-      aplicativo:  state.aplicativo,
-      usuario:     state.usuario,
-      dispositivo: state.dispositivo
+      apiKey: API_KEY,
+      action: 'heartbeat',
+      idCliente: idCliente,
+      aplicativo: aplicativo,
+      usuario: usuario,
+      dispositivo: dispositivo,
+      sessionId: sessionId,
+      timestamp: new Date().toISOString()
     });
   }
 
-  // ==========================================================================
-  // DETECÇÃO DE INATIVIDADE
-  // ==========================================================================
+  // ============================================================================
+  // IDLE DETECTION
+  // ============================================================================
   function bindActivityListeners() {
-    const events = ['mousemove', 'keydown', 'click', 'touchstart', 'scroll'];
-    const onActivity = () => {
-      state.lastActivity = Date.now();
-      if (state.isIdle) {
-        state.isIdle = false;
-        if (state.loggedIn) pingHeartbeat();
-      }
-    };
-    events.forEach(ev => global.addEventListener(ev, onActivity, { passive: true }));
+    const events = ['mousedown', 'keydown', 'touchstart', 'scroll'];
+    events.forEach(ev => {
+      global.addEventListener(ev, () => {
+        lastActivity = Date.now();
+        if (isIdle) {
+          isIdle = false;
+          if (isLoggedIn) startHeartbeat();
+        }
+      }, { passive: true });
+    });
 
     setInterval(() => {
-      const idleFor = Date.now() - state.lastActivity;
-      if (idleFor > CONFIG.IDLE_THRESHOLD_MS && !state.isIdle) {
-        state.isIdle = true;
+      if (Date.now() - lastActivity > IDLE_THRESHOLD_MS) {
+        isIdle = true;
       }
-    }, CONFIG.HEARTBEAT_INTERVAL_MS);
+    }, 60000);
   }
 
-  // ==========================================================================
-  // CAPTURA AUTOMÁTICA DE ERROS NÃO TRATADOS
-  // ==========================================================================
+  // ============================================================================
+  // ERROR CAPTURE
+  // ============================================================================
   function bindGlobalErrorHandlers() {
     global.addEventListener('error', (ev) => {
-      const msg = ev.error
-        ? `${ev.error.message || ev.message}\n${ev.error.stack || ''}`
-        : `${ev.message || 'Erro desconhecido'} (${ev.filename}:${ev.lineno}:${ev.colno})`;
-      api.log({ tipo: 'ERRO', mensagem: msg });
+      api.log({
+        tipo: 'ERRO',
+        mensagem: '[JS Error] ' + (ev.message || 'sem mensagem') +
+                  ' @ ' + (ev.filename || '?') + ':' + (ev.lineno || '?')
+      });
     });
 
     global.addEventListener('unhandledrejection', (ev) => {
-      const reason = ev.reason;
-      const msg = reason
-        ? (reason.stack || reason.message || String(reason))
-        : 'Promise rejeitada sem motivo';
-      api.log({ tipo: 'ERRO', mensagem: `[unhandledrejection] ${msg}` });
+      const reason = ev.reason && ev.reason.message ? ev.reason.message : String(ev.reason);
+      api.log({
+        tipo: 'ERRO',
+        mensagem: '[Promise Rejection] ' + reason
+      });
     });
   }
 
-  // ==========================================================================
-  // ENCERRAMENTO GRACIOSO NO UNLOAD
-  // ==========================================================================
+  // ============================================================================
+  // UNLOAD HANDLER
+  // ============================================================================
   function bindUnloadHandlers() {
-    const onUnload = () => {
-      if (!state.loggedIn || !state.sessionId) return;
-      sendBeacon({
-        action:    'endSession',
-        sessionId: state.sessionId
-      });
-    };
-    global.addEventListener('pagehide', onUnload);
+    global.addEventListener('pagehide', () => {
+      if (isLoggedIn && sessionId) {
+        sendBeacon({
+          apiKey: API_KEY,
+          action: 'endSession',
+          idCliente: idCliente,
+          aplicativo: aplicativo,
+          usuario: usuario,
+          sessionId: sessionId,
+          timestamp: new Date().toISOString()
+        });
+      }
+    });
   }
 
-  // ==========================================================================
-  // WATCHDOG — Detecta travamentos da thread principal
-  // ----------------------------------------------------------------------------
-  // Como funciona:
-  //   1. Thread principal "pulsa" a cada 2s (atualiza wdLastPulse).
-  //   2. Um Web Worker em thread SEPARADA verifica a cada 2s.
-  //   3. Se a thread principal ficar 8s sem pulsar, está travada (loop infinito,
-  //      cálculo síncrono pesado, etc).
-  //   4. O worker dispara um api.log() de ERRO pra Central via fetch interno.
-  //   5. Cooldown de 5min para evitar flood se o app destravar e travar de novo.
-  //
-  // Limitação: NÃO detecta loops assíncronos (Promise.then() infinito, p.ex.).
-  //            Para esses casos, o erro vem do bindGlobalErrorHandlers ou de
-  //            timeout na própria função.
-  // ==========================================================================
-  const WATCHDOG = {
-    HEARTBEAT_INTERVAL_MS: 2000,
-    CHECK_INTERVAL_MS:     2000,
-    TIMEOUT_MS:            8000,
-    COOLDOWN_MS:           5 * 60 * 1000
-  };
+  // ============================================================================
+  // VISIBILITY HANDLER (pausa heartbeat e watchdog quando aba some)
+  // ============================================================================
+  function bindVisibilityHandler() {
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        // Aba oculta: pausa heartbeat e reseta pulso do watchdog
+        heartbeatPaused = true;
+        wdLastPulse = Date.now();
+      } else {
+        // Aba voltou: retoma heartbeat e reseta pulso
+        heartbeatPaused = false;
+        wdLastPulse = Date.now();
+        if (isLoggedIn) pingHeartbeat();
+      }
+    });
+  }
 
-  let wdLastPulse  = Date.now();
-  let wdAlertSent  = false;
-  let wdWorker     = null;
-  let wdPulseTimer = null;
-
+  // ============================================================================
+  // WATCHDOG — Detecta travamento REAL da thread principal
+  // ============================================================================
   function startWatchdog() {
     if (wdWorker) return;
 
-    // 1) Pulso da thread principal — se travar, esse setInterval para de rodar
+    // Pulso na thread principal
     wdPulseTimer = setInterval(() => {
       wdLastPulse = Date.now();
     }, WATCHDOG.HEARTBEAT_INTERVAL_MS);
 
-    // 2) Worker em thread separada — verifica se a principal continua pulsando
     try {
       const workerCode = `
         setInterval(() => self.postMessage('check'), ${WATCHDOG.CHECK_INTERVAL_MS});
@@ -295,19 +270,29 @@
       wdWorker = new Worker(URL.createObjectURL(blob));
 
       wdWorker.onmessage = () => {
+        // 🛡️ PROTEÇÃO 1: Se aba está oculta, ignora (Chrome throttla timers)
+        if (document.hidden) {
+          wdLastPulse = Date.now();
+          return;
+        }
+
         const silentFor = Date.now() - wdLastPulse;
+
+        // 🛡️ PROTEÇÃO 2: Se passou MUITO tempo (>30s), foi throttle do navegador,
+        // não travamento real. Reseta sem alertar.
+        if (silentFor > WATCHDOG.MAX_TIMEOUT_MS) {
+          wdLastPulse = Date.now();
+          return;
+        }
+
+        // 🚨 Travamento real: 8s a 30s sem pulso COM aba visível
         if (silentFor > WATCHDOG.TIMEOUT_MS && !wdAlertSent) {
           wdAlertSent = true;
-          warn(`Watchdog detectou travamento de ${Math.round(silentFor / 1000)}s`);
-
+          warn(`Watchdog detectou travamento de ${Math.round(silentFor/1000)}s`);
           api.log({
             tipo: 'ERRO',
-            mensagem:
-              `[WATCHDOG] Thread principal travada por ${Math.round(silentFor / 1000)}s. ` +
-              `Possível loop infinito ou bloqueio síncrono. ` +
-              `URL: ${global.location.href}`
+            mensagem: `[WATCHDOG] Thread principal travada por ${Math.round(silentFor/1000)}s. URL: ${global.location.href}`
           });
-
           setTimeout(() => { wdAlertSent = false; }, WATCHDOG.COOLDOWN_MS);
         }
       };
@@ -318,154 +303,115 @@
 
   function stopWatchdog() {
     if (wdPulseTimer) { clearInterval(wdPulseTimer); wdPulseTimer = null; }
-    if (wdWorker)     { wdWorker.terminate();        wdWorker     = null; }
+    if (wdWorker) { wdWorker.terminate(); wdWorker = null; }
   }
 
-  // ==========================================================================
+  // ============================================================================
   // API PÚBLICA
-  // ==========================================================================
+  // ============================================================================
   const api = {
-    /**
-     * Inicializa o tracker. Chamar UMA vez no boot do app.
-     */
-    init({ idCliente, aplicativo }) {
-      if (state.initialized) {
-        warn('Tracker já inicializado — ignorando init duplicado.');
-        return;
-      }
-      if (!idCliente || !aplicativo) {
-        warn('init() exige { idCliente, aplicativo }.');
-        return;
-      }
-
-      state.idCliente   = String(idCliente).trim();
-      state.aplicativo  = String(aplicativo).trim();
-      state.dispositivo = detectDevice();
-      state.initialized = true;
+    init: function (cfg) {
+      if (initialized) return;
+      initialized = true;
+      idCliente = (cfg && cfg.idCliente) || 'desconhecido';
+      aplicativo = (cfg && cfg.aplicativo) || 'desconhecido';
+      dispositivo = detectDevice();
 
       bindActivityListeners();
       bindGlobalErrorHandlers();
       bindUnloadHandlers();
-      startWatchdog();   // ← Watchdog ligado já no boot
+      bindVisibilityHandler();
+      startWatchdog();
+
+      console.log(LOG_PREFIX, 'Tracker iniciado:', { idCliente, aplicativo, dispositivo });
     },
 
-    /**
-     * Reporta login bem-sucedido.
-     */
-    loginSuccess({ usuario, dispositivo }) {
-      if (!state.initialized) {
-        warn('Chame init() antes de loginSuccess().');
-        return;
-      }
-      state.usuario     = String(usuario || 'desconhecido').trim();
-      state.dispositivo = dispositivo ? String(dispositivo).trim() : state.dispositivo;
-      state.sessionId   = getOrCreateSessionId();
-      state.loggedIn    = true;
-      state.lastActivity = Date.now();
-      state.isIdle      = false;
+    loginSuccess: function (data) {
+      if (!initialized) { warn('init() não foi chamado'); return; }
+      usuario = (data && data.usuario) || 'anônimo';
+      if (data && data.dispositivo) dispositivo = data.dispositivo;
+      sessionId = getOrCreateSessionId();
+      isLoggedIn = true;
 
       send({
-        action:      'authEvent',
-        idCliente:   state.idCliente,
-        aplicativo:  state.aplicativo,
-        usuario:     state.usuario,
-        dispositivo: state.dispositivo,
-        tipoEvento:  'LOGIN_SUCESSO',
-        detalhes:    'Login bem-sucedido'
+        apiKey: API_KEY,
+        action: 'authEvent',
+        idCliente: idCliente,
+        aplicativo: aplicativo,
+        usuario: usuario,
+        dispositivo: dispositivo,
+        sessionId: sessionId,
+        evento: 'LOGIN_SUCESSO',
+        timestamp: new Date().toISOString()
       });
 
       startHeartbeat();
     },
 
-    /**
-     * Reporta tentativa de login falhada.
-     */
-    loginFailure({ usuario, motivo, dispositivo }) {
-      if (!state.initialized) {
-        warn('Chame init() antes de loginFailure().');
-        return;
-      }
+    loginFailure: function (data) {
+      if (!initialized) { warn('init() não foi chamado'); return; }
       send({
-        action:      'authEvent',
-        idCliente:   state.idCliente,
-        aplicativo:  state.aplicativo,
-        usuario:     String(usuario || 'desconhecido').trim(),
-        dispositivo: dispositivo ? String(dispositivo).trim() : state.dispositivo,
-        tipoEvento:  'LOGIN_FALHA',
-        detalhes:    String(motivo || 'Credenciais inválidas')
+        apiKey: API_KEY,
+        action: 'authEvent',
+        idCliente: idCliente,
+        aplicativo: aplicativo,
+        usuario: (data && data.usuario) || 'anônimo',
+        dispositivo: (data && data.dispositivo) || dispositivo,
+        evento: 'LOGIN_FALHA',
+        motivo: (data && data.motivo) || 'desconhecido',
+        timestamp: new Date().toISOString()
       });
     },
 
-    /**
-     * Logout explícito.
-     * Nota: o Watchdog NÃO é parado — continua útil mesmo na tela de login.
-     */
-    logout() {
-      if (!state.loggedIn || !state.sessionId) return;
-
+    logout: function () {
+      if (!isLoggedIn) return;
       send({
-        action:    'endSession',
-        sessionId: state.sessionId
+        apiKey: API_KEY,
+        action: 'endSession',
+        idCliente: idCliente,
+        aplicativo: aplicativo,
+        usuario: usuario,
+        sessionId: sessionId,
+        timestamp: new Date().toISOString()
       });
-
       stopHeartbeat();
       clearSessionId();
-
-      state.loggedIn  = false;
-      state.usuario   = null;
-      state.sessionId = null;
+      isLoggedIn = false;
+      sessionId = null;
+      usuario = null;
     },
 
-    /**
-     * Log manual (opcional).
-     * Use para INFO/ALERTA específicos ou para registrar erros tratados
-     * que você quer visibilidade na Central.
-     */
-    log({ tipo, mensagem }) {
-      if (!state.initialized) {
-        warn('Chame init() antes de log().');
-        return;
-      }
+    log: function (data) {
+      if (!initialized) { warn('init() não foi chamado'); return; }
       send({
-        action:       'log',
-        idCliente:    state.idCliente,
-        aplicativo:   state.aplicativo,
-        usuario:      state.usuario || 'anônimo',
-        dispositivo:  state.dispositivo,
-        tipoLog:      String(tipo || 'INFO').toUpperCase(),
-        mensagemErro: String(mensagem || '')
+        apiKey: API_KEY,
+        action: 'logEvent',
+        idCliente: idCliente,
+        aplicativo: aplicativo,
+        usuario: usuario || 'anônimo',
+        dispositivo: dispositivo,
+        tipoLog: (data && data.tipo) || 'INFO',
+        mensagemErro: (data && data.mensagem) || '',
+        timestamp: new Date().toISOString()
       });
     },
 
-    /**
-     * Atalho de debug — útil para validar que a configuração está OK.
-     */
-    _debugPing() {
-      send({
-        action:       'log',
-        idCliente:    state.idCliente || 'debug',
-        aplicativo:   state.aplicativo || 'debug',
-        usuario:      'debug-tracker',
-        dispositivo:  state.dispositivo || detectDevice(),
-        tipoLog:      'INFO',
-        mensagemErro: 'Ping de debug do tracker'
-      }).then(() => warn('Debug ping enviado.'));
+    // Utilitários de debug
+    _debugPing: function () {
+      pingHeartbeat();
+      console.log(LOG_PREFIX, 'Ping de debug enviado');
     },
 
-    /**
-     * Atalho para forçar disparo do watchdog em ambiente de teste.
-     * Use no console do DevTools: GodModeTracker._debugWatchdogTest()
-     * (ATENÇÃO: trava o navegador por 9s.)
-     */
-    _debugWatchdogTest() {
-      warn('Travando thread principal por 9s para testar watchdog...');
+    _debugWatchdogTest: function () {
+      console.warn(LOG_PREFIX, 'Travando thread principal por 9s...');
       const start = Date.now();
       while (Date.now() - start < 9000) { /* trava de propósito */ }
-      warn('Thread liberada. Confira o God Mode em ~10s.');
-    }
+      console.warn(LOG_PREFIX, 'Thread liberada. Aguarde alerta em ~5s.');
+    },
+
+    _pauseHeartbeat: function () { heartbeatPaused = true; },
+    _resumeHeartbeat: function () { heartbeatPaused = false; }
   };
 
-  // Expõe globalmente
   global.GodModeTracker = api;
-
 })(window);
