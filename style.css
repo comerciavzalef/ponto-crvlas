@@ -235,3 +235,45 @@ body {
 body.pronto {
   opacity: 1;
 }
+
+/* ══════════════ BANNER DE FERIADO PREMIUM ══════════════ */
+.feriado-banner {
+  background: linear-gradient(145deg, rgba(255, 69, 58, 0.12), rgba(255, 159, 10, 0.12));
+  border: 1px solid rgba(255, 69, 58, 0.25);
+  border-radius: var(--r-md);
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  animation: fadeInApp 0.4s ease-out;
+}
+.feriado-icon {
+  font-size: 1.6rem;
+  filter: drop-shadow(0 4px 12px rgba(255, 69, 58, 0.4));
+}
+.feriado-text { flex: 1; }
+.feriado-title {
+  color: var(--red);
+  font-weight: 800;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 2px;
+}
+.feriado-sub {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+.tag-extra {
+  background: var(--purple-soft);
+  color: var(--purple);
+  font-size: 0.65rem;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 800;
+  margin-left: 8px;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
