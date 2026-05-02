@@ -224,3 +224,14 @@ body {
 html {
   background: #0a0a0a;
 }
+
+/* Esconde tudo no primeiro milissegundo */
+body {
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* O JS vai adicionar essa classe quando estiver tudo pronto */
+body.pronto {
+  opacity: 1;
+}
