@@ -763,3 +763,32 @@ setTimeout(() => {
     setTimeout(() => tampa.remove(), 400); // Remove do código após sumir
   }
 }, 150); // Um atraso minúsculo de 150ms para garantir que o Android piscou o que tinha que piscar
+
+// ============================================================================
+// PAUSE ON HIDDEN — Para sync de 5 min quando app fica em background
+// ============================================================================
+(function setupPauseOnHidden() {
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      console.log('[Ponto] App oculto — pausando sync');
+      if (window._syncIntervalId) {
+        clearInterval(window._syncIntervalId);
+        window._syncIntervalId = null;
+      }
+    } else {
+      console.log('[Ponto] App visível — retomando sync');
+      if (!window._syncIntervalId && typeof syncDados === 'function') {
+        syncDados(); // sync imediato ao voltar
+        window._syncIntervalId = setInterval(syncDados, 5 * 60 * 1000);
+      }
+    }
+  });
+  
+  window.addEventListener('pagehide', () => {
+    if (window._syncIntervalId) {
+      clearInterval(window._syncIntervalId);
+      window._syncIntervalId = null;
+    }
+  });
+})();
+
