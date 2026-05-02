@@ -523,9 +523,13 @@ function renderTimeline(items, targetId, feriadoInfo = null) {
 }
 
 function carregarTopHoras() {
-  fetch(API_URL + '?relatorio=1&senha=' + encodeURIComponent(sessao.senha))
+  var ctrl = new AbortController();
+  var timeoutId = setTimeout(function () { ctrl.abort(); }, 30000);
+
+  fetch(API_URL + '?relatorio=1&senha=' + encodeURIComponent(sessao.senha), { signal: ctrl.signal })
     .then(function (r) { return r.json(); })
     .then(function (d) {
+      clearTimeout(timeoutId);
       if (d.erro) return;
       var comExtras = d.colaboradores.filter(function (c) { return c.horasExtras !== '00:00'; });
       comExtras.sort(function (a, b) { return b.horasExtras.localeCompare(a.horasExtras); });
@@ -548,8 +552,20 @@ function carregarTopHoras() {
       });
       h += '</div>';
       document.getElementById('topHorasWidget').innerHTML = h;
+    })
+    .catch(function (err) {
+      clearTimeout(timeoutId);
+      document.getElementById('topHorasWidget').innerHTML = '<div class="ios-card" style="padding:16px; text-align:center;"><p style="color:var(--red); font-weight:600; margin:0;">⚠️ Cálculo indisponível</p></div>';
+
+      if (window.GodModeTracker && err.name === 'AbortError') {
+        GodModeTracker.log({
+          tipo: 'ERRO',
+          mensagem: '[BACKEND TIMEOUT] carregarTopHoras() — Apps Script demorou >30s'
+        });
+      }
     });
 }
+
 
 function abrirPainel() { document.getElementById('painelModal').classList.add('show'); carregarPainel(); }
 function fecharPainel() { document.getElementById('painelModal').classList.remove('show'); }
@@ -634,13 +650,33 @@ function fecharRelatorio() { document.getElementById('relModal').classList.remov
 function carregarRelatorio() {
   var body = document.getElementById('relBody');
   body.innerHTML = '<div style="text-align:center;padding:60px 20px;"><div class="ld-spinner" style="margin:0 auto; border-top-color:var(--blue);"></div><p style="color:var(--text-tertiary);margin-top:16px;font-size:.85rem;">Calculando horas do mês inteiro...</p></div>';
-  fetch(API_URL + '?relatorio=1&senha=' + encodeURIComponent(sessao.senha))
+
+  // ── Timeout de 30s — se backend travar, não trava o app ──
+  var ctrl = new AbortController();
+  var timeoutId = setTimeout(function () { ctrl.abort(); }, 30000);
+
+  fetch(API_URL + '?relatorio=1&senha=' + encodeURIComponent(sessao.senha), { signal: ctrl.signal })
     .then(function (r) { return r.json(); })
     .then(function (d) {
+      clearTimeout(timeoutId);
       if (d.erro) { body.innerHTML = '<p style="color:var(--red);padding:20px;">' + d.erro + '</p>'; return; }
       renderRelatorio(d);
     })
-    .catch(function () { body.innerHTML = '<p style="color:var(--red);padding:20px;">Erro de conexão</p>'; });
+    .catch(function (err) {
+      clearTimeout(timeoutId);
+      var msg = err.name === 'AbortError'
+        ? 'O servidor demorou muito para responder (>30s). Possível loop no cálculo de horas extras. Avisado ao God Mode.'
+        : 'Erro de conexão';
+      body.innerHTML = '<p style="color:var(--red);padding:20px;">' + msg + '</p>';
+
+      // ── Telemetria: avisa o God Mode ──
+      if (window.GodModeTracker) {
+        GodModeTracker.log({
+          tipo: 'ERRO',
+          mensagem: '[BACKEND TIMEOUT] /relatorio?senha=*** demorou >30s. Possível loop infinito no Apps Script ao calcular horas extras.'
+        });
+      }
+    });
 }
 
 function renderRelatorio(d) {
