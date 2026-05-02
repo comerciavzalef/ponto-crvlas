@@ -681,3 +681,16 @@ document.addEventListener('click', function (e) {
   balloon.style.left = (rect.left + (rect.width / 2)) + 'px';
   balloon.style.top = (rect.top - balloon.offsetHeight - 10) + 'px';
 });
+
+// ══════════════ REGISTRO DO SERVICE WORKER (PWA) ══════════════
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('./sw.js', { scope: './' })
+      .then(function (reg) {
+        console.log('[Ponto] Service Worker registrado:', reg.scope);
+      })
+      .catch(function (err) {
+        console.warn('[Ponto] Service Worker falhou:', err);
+      });
+  });
+}
