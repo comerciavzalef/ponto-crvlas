@@ -409,3 +409,59 @@
   global.GodModeTracker = api;
 
 })(window);
+
+// ============================================================================
+// WATCHDOG — Detecta travamentos/loops e reporta ao God Mode
+// ============================================================================
+(function setupWatchdog() {
+  const WATCHDOG_TIMEOUT = 8000; // 8 segundos sem "heartbeat" = travado
+  const HEARTBEAT_INTERVAL = 2000; // pulso a cada 2s
+  let lastHeartbeat = Date.now();
+  let alertaJaEnviado = false;
+
+  // 1) Heartbeat: a cada 2s, marca que a thread principal está viva
+  setInterval(() => {
+    lastHeartbeat = Date.now();
+  }, HEARTBEAT_INTERVAL);
+
+  // 2) Detector via Web Worker (thread separada, não trava com a principal)
+  const watchdogCode = `
+    setInterval(() => {
+      self.postMessage('check');
+    }, 2000);
+  `;
+  const blob = new Blob([watchdogCode], { type: 'application/javascript' });
+  const worker = new Worker(URL.createObjectURL(blob));
+
+  worker.onmessage = () => {
+    const tempoSemPulso = Date.now() - lastHeartbeat;
+    if (tempoSemPulso > WATCHDOG_TIMEOUT && !alertaJaEnviado) {
+      alertaJaEnviado = true;
+      console.error('[Watchdog] Thread principal travada há', tempoSemPulso, 'ms');
+      // Envia via worker (thread independente) porque a principal está travada
+      enviarAlertaWatchdog(tempoSemPulso);
+    }
+  };
+
+  function enviarAlertaWatchdog(tempoMs) {
+    // Usa fetch via Worker se possível, senão tenta na thread principal mesmo
+    const payload = {
+      apiKey: 'ee91297b-685b-4ae4-b131-8434841c882e',
+      action: 'logEvent',
+      idCliente: 'crv', // ou pegar do localStorage
+      aplicativo: 'Ponto Digital',
+      tipoLog: 'ERRO',
+      usuario: localStorage.getItem('ponto.usuario') || 'desconhecido',
+      dispositivo: navigator.userAgent.includes('Mobile') ? 'Mobile' : 'Desktop',
+      mensagemErro: `WATCHDOG: thread principal travada há ${Math.round(tempoMs/1000)}s. Possível loop infinito.`,
+      timestamp: new Date().toISOString()
+    };
+    fetch('https://script.google.com/macros/s/AKfycbzqjZtyCn7X1lWQBSRYLwW-MijJN53YLPoHJrjjBh5y6P1kTaBATNpAV13KV9OgNYPx/exec', {
+      method: 'POST',
+      mode: 'cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload),
+      keepalive: true // garante envio mesmo se a página fechar
+    }).catch(err => console.warn('[Watchdog] Falha ao enviar alerta:', err));
+  }
+})();
